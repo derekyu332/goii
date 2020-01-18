@@ -6,7 +6,7 @@ import (
 )
 
 func PluginAllocator(name string) interface{} {
-	p, err := plugin.Open(build.Default.GOPATH + "/src/github.com/derekyu332/plugins/" + name)
+	p, err := plugin.Open(build.Default.GOPATH + "/src/github.com/derekyu332/goii/plugins/" + name)
 
 	if err != nil {
 		panic(err)
