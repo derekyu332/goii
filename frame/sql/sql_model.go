@@ -124,7 +124,7 @@ func (this *SqlModel) Get(id interface{}) (base.IActiveRecord, error) {
 	if cache_record, ok := this.Data.(cache.ICacheRecord); ok {
 		key, _ := json.Marshal(id)
 
-		if record := cache.GetCacheRecord(string(key)); record != nil {
+		if record := cache.GetCacheRecord(fmt.Sprintf("%v@%v", string(key), this.Data.TableName())); record != nil {
 			if cache_record.ReadOnly() {
 				this.Data = record
 				logger.Info("[%v] Get %v From Cache", this.RequestID, id)
@@ -262,6 +262,46 @@ func (this *SqlModel) FindOne(query interface{}, args ...interface{}) (base.IAct
 	}
 
 	return this.Data, this.LOG_RET_ERR(this.Data.TableName(), req_start, "FindOne", query, err)
+}
+
+func (this *SqlModel) Delete() error {
+	if gEngine == nil || !this.Exists {
+		return errors.New("Unexpected error")
+	}
+
+	req_start := time.Now().UnixNano() / int64(time.Millisecond)
+	var err error
+
+	if this.Exists {
+		record, ok := this.Data.(ISqlRecord)
+
+		if !ok {
+			logger.Warning("[%v] ISqlRecord not implemented")
+			return errors.New("Unexpected error")
+		}
+
+		var pk interface{}
+
+		if len(record.PrimaryKey()) <= 1 {
+			pk = this.Data.GetId()
+		} else {
+			pk = record.PrimaryKey()
+		}
+
+		var affected int64
+		affected, err = gEngine.ID(pk).Delete(this.Data)
+
+		if err != nil {
+			logger.Warning("[%v] Delete %v failed %v", this.RequestID, pk, err.Error())
+		} else if affected == 0 {
+			logger.Warning("[%v] Delete %v not affected", this.RequestID, pk)
+			return errors.New("Unexpected error")
+		} else {
+			logger.Info("[%v] Delete %v success", this.RequestID, pk)
+		}
+	}
+
+	return this.LOG_RET_ERR(this.Data.TableName(), req_start, "Delete", this.Data.GetId(), err)
 }
 
 func (this *SqlModel) Save() error {
