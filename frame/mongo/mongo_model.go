@@ -372,6 +372,25 @@ func (this *MongoModel) Save() error {
 	}
 }
 
+func (this *MongoModel) Remove() error {
+	if !this.Exists {
+		return nil
+	}
+
+	session := this.GetSession()
+	defer session.Close()
+	collection := session.DB(gDbName).C(this.Data.TableName())
+	var err error
+	req_start := time.Now().UnixNano() / int64(time.Millisecond)
+	err = collection.RemoveId(this.Data.GetId())
+
+	if err != nil {
+		logger.Warning("[%v] Remove %v failed %v", this.RequestID, this.Data.GetId(), err.Error())
+	}
+
+	return this.LOG_RET_ERR(this.Data.TableName(), req_start, "Remove", bson.M{"_id": this.Data.GetId()}, err)
+}
+
 func (this *MongoModel) RemoveAll(cond bson.M) (int, error) {
 	req_start := time.Now().UnixNano() / int64(time.Millisecond)
 	session := this.GetSession()
