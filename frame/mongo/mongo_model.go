@@ -484,3 +484,10 @@ func (this *MongoModel) Upsert(cond bson.M, update interface{}) error {
 
 	return this.LOG_RET_ERR(this.Data.TableName(), req_start, "Upsert", cond, err)
 }
+
+func (this *MongoModel) EnsureIndex(index mgo.Index) error {
+	session := this.GetSession()
+	defer session.Close()
+	collection := session.DB(gDbName).C(this.Data.TableName())
+	return collection.EnsureIndex(index)
+}
