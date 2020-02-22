@@ -133,6 +133,7 @@ func (this *SqlModel) Get(id interface{}) (base.IActiveRecord, error) {
 			} else if json_bytes, err := json.Marshal(record); err == nil {
 				json.Unmarshal(json_bytes, this.Data)
 				logger.Info("[%v] Get %v From Cache(Copy)", this.RequestID, id)
+				this.RefreshOldAttr()
 				this.Exists = true
 				return this.Data, nil
 			}
