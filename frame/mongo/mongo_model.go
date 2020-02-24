@@ -9,6 +9,7 @@ import (
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -226,19 +227,21 @@ func (this *MongoModel) FindAll(result interface{}, selector FindAllSelector) er
 		sort = selector.Sort
 	}
 
+	sort_slics := strings.Split(sort, ",")
+
 	if selector.Page < 0 || selector.Limit <= 0 {
 		if selector.Col != nil {
-			iter = collection.Find(selector.Cond).Sort(sort).Select(selector.Col).Iter()
+			iter = collection.Find(selector.Cond).Sort(sort_slics...).Select(selector.Col).Iter()
 		} else {
-			iter = collection.Find(selector.Cond).Sort(sort).Iter()
+			iter = collection.Find(selector.Cond).Sort(sort_slics...).Iter()
 		}
 	} else {
 		offset := selector.Page * selector.Limit
 
 		if selector.Col != nil {
-			iter = collection.Find(selector.Cond).Sort(sort).Select(selector.Col).Skip(offset).Limit(selector.Limit).Iter()
+			iter = collection.Find(selector.Cond).Sort(sort_slics...).Select(selector.Col).Skip(offset).Limit(selector.Limit).Iter()
 		} else {
-			iter = collection.Find(selector.Cond).Sort(sort).Skip(offset).Limit(selector.Limit).Iter()
+			iter = collection.Find(selector.Cond).Sort(sort_slics...).Skip(offset).Limit(selector.Limit).Iter()
 		}
 	}
 
