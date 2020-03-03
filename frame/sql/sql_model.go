@@ -122,17 +122,13 @@ func (this *SqlModel) Get(id interface{}) (base.IActiveRecord, error) {
 	}
 
 	if cache_record, ok := this.Data.(cache.ICacheRecord); ok {
-		key, _ := json.Marshal(id)
-
-		if record := cache.GetCacheRecord(fmt.Sprintf("%v@%v", string(key), this.Data.TableName())); record != nil {
+		if record := cache.GetCacheRecord(fmt.Sprintf("%v@%v", id, this.Data.TableName())); record != nil {
 			if cache_record.ReadOnly() {
 				this.Data = record
-				logger.Info("[%v] Get %v From Cache", this.RequestID, id)
 				this.Exists = true
 				return this.Data, nil
-			} else if json_bytes, err := json.Marshal(record); err == nil {
-				json.Unmarshal(json_bytes, this.Data)
-				logger.Info("[%v] Get %v From Cache(Copy)", this.RequestID, id)
+			} else {
+				this.Data = reflect.New(reflect.ValueOf(record).Elem().Type()).Interface().(base.IActiveRecord)
 				this.RefreshOldAttr()
 				this.Exists = true
 				return this.Data, nil
