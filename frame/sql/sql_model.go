@@ -1,7 +1,6 @@
 package sql
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/derekyu332/goii/frame/base"
