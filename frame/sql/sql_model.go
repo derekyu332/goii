@@ -1,6 +1,7 @@
 package sql
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/derekyu332/goii/frame/base"
@@ -127,7 +128,8 @@ func (this *SqlModel) Get(id interface{}) (base.IActiveRecord, error) {
 				this.Exists = true
 				return this.Data, nil
 			} else {
-				this.Data = reflect.New(reflect.ValueOf(record).Elem().Type()).Interface().(base.IActiveRecord)
+				data_json, _ := json.Marshal(record)
+				json.Unmarshal(data_json, this.Data)
 				this.RefreshOldAttr()
 				this.Exists = true
 				return this.Data, nil
