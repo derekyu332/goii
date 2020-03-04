@@ -27,7 +27,10 @@ func Get(url string) (string, error) {
 	body, err := ioutil.ReadAll(respond.Body)
 	logger.Info("HttpGetRequest Err Status = %d body = %v", respond.StatusCode, string(body))
 
-	if err != nil || respond.StatusCode != 200 {
+	if err != nil {
+		logger.Warning("Err %v", err.Error())
+		return "", err
+	} else if respond.StatusCode != 200 {
 		logger.Warning("Status Code = %d", respond.StatusCode)
 		return "", errors.New("Bad Status Code")
 	}
