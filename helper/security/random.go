@@ -1,6 +1,7 @@
 package security
 
 import (
+	"github.com/derekyu332/goii/helper/extend"
 	"math/rand"
 )
 
@@ -11,5 +12,6 @@ func GenerateRandomString(n int) string {
 	for i := range b {
 		b[i] = letterBytes[rand.Intn(len(letterBytes))]
 	}
-	return string(b)
+
+	return extend.BytesString(b)
 }

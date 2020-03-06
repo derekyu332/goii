@@ -16,11 +16,11 @@ func newClient() *http.Client {
 	}
 }
 
-func Get(url string) (string, error) {
+func Get(url string) ([]byte, error) {
 	respond, err := newClient().Get(url)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	defer respond.Body.Close()
@@ -29,16 +29,16 @@ func Get(url string) (string, error) {
 
 	if err != nil {
 		logger.Warning("Err %v", err.Error())
-		return "", err
+		return nil, err
 	} else if respond.StatusCode != 200 {
 		logger.Warning("Status Code = %d", respond.StatusCode)
-		return "", errors.New("Bad Status Code")
+		return nil, errors.New("Bad Status Code")
 	}
 
-	return string(body), nil
+	return body, nil
 }
 
-func PostForm(postUrl string, params map[string]string) (string, error) {
+func PostForm(postUrl string, params map[string]string) ([]byte, error) {
 	data := url.Values{}
 
 	for key, value := range params {
@@ -48,16 +48,19 @@ func PostForm(postUrl string, params map[string]string) (string, error) {
 	respond, err := newClient().PostForm(postUrl, data)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	defer respond.Body.Close()
 	body, err := ioutil.ReadAll(respond.Body)
 
-	if err != nil || respond.StatusCode != 200 {
+	if err != nil {
+		logger.Warning("Err %v", err.Error())
+		return nil, err
+	} else if respond.StatusCode != 200 {
 		logger.Warning("Status Code = %d", respond.StatusCode)
-		return "", errors.New("Bad Status Code")
+		return nil, errors.New("Bad Status Code")
 	}
 
-	return string(body), nil
+	return body, nil
 }
