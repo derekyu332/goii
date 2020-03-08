@@ -6,5 +6,6 @@ type IConfigDoc interface {
 
 type IConfigure interface {
 	EnableReload() bool
+	ConfigDoc() IConfigDoc
 	LoadConfig() error
 }

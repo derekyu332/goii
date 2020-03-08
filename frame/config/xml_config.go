@@ -1,29 +1,38 @@
 package config
 
 import (
-	"encoding/xml"
 	"github.com/derekyu332/goii/frame/base"
 	"github.com/derekyu332/goii/helper/logger"
-	"io/ioutil"
+	"github.com/micro/go-micro/config"
+	"sync"
 )
 
 type XmlConfigure struct {
-	Data base.IConfigDoc
+	Data    base.IConfigDoc
+	cfgLock sync.RWMutex
 }
 
 func (this *XmlConfigure) EnableReload() bool {
 	return true
 }
 
+func (this *XmlConfigure) ConfigDoc() base.IConfigDoc {
+	this.cfgLock.RLock()
+	defer this.cfgLock.RUnlock()
+	return this.Data
+}
+
 func (this *XmlConfigure) LoadConfig() error {
-	content, err := ioutil.ReadFile(this.Data.FileName())
+	err := config.Load(this.Data.FileName())
 
 	if err != nil {
-		logger.Error("Read xml %v failed %v", this.Data.FileName(), err.Error())
+		logger.Error("config.LoadFile %v failed %v", this.Data.FileName(), err.Error())
 		return err
 	}
 
-	err = xml.Unmarshal(content, this.Data)
+	this.cfgLock.Lock()
+	defer this.cfgLock.Unlock()
+	err = config.Scan(this.Data)
 
 	if err != nil {
 		logger.Error("Decode xml %v failed %v", this.Data.FileName(), err.Error())
