@@ -12,7 +12,7 @@ import (
 func newClient() *http.Client {
 	//TBD pool
 	return &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: 20 * time.Second,
 	}
 }
 
