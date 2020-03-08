@@ -23,7 +23,7 @@ func (this *XmlConfigure) ConfigDoc() base.IConfigDoc {
 }
 
 func (this *XmlConfigure) LoadConfig() error {
-	err := config.Load(this.Data.FileName())
+	err := config.LoadFile(this.Data.FileName())
 
 	if err != nil {
 		logger.Error("config.LoadFile %v failed %v", this.Data.FileName(), err.Error())
