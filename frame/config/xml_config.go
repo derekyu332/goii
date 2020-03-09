@@ -1,13 +1,15 @@
 package config
 
 import (
+	"encoding/xml"
 	"github.com/derekyu332/goii/frame/base"
 	"github.com/derekyu332/goii/helper/logger"
-	"github.com/micro/go-micro/config"
+	"io/ioutil"
 	"sync"
 )
 
 type XmlConfigure struct {
+	Key     string
 	Data    base.IConfigDoc
 	cfgLock sync.RWMutex
 }
@@ -22,17 +24,21 @@ func (this *XmlConfigure) ConfigDoc() base.IConfigDoc {
 	return this.Data
 }
 
+func (this *XmlConfigure) ConfigKey() string {
+	return this.Key
+}
+
 func (this *XmlConfigure) LoadConfig() error {
-	err := config.LoadFile(this.Data.FileName())
+	content, err := ioutil.ReadFile(this.Data.FileName())
 
 	if err != nil {
-		logger.Error("config.LoadFile %v failed %v", this.Data.FileName(), err.Error())
+		logger.Error("Read xml %v failed %v", this.Data.FileName(), err.Error())
 		return err
 	}
 
 	this.cfgLock.Lock()
 	defer this.cfgLock.Unlock()
-	err = config.Scan(this.Data)
+	err = xml.Unmarshal(content, this.Data)
 
 	if err != nil {
 		logger.Error("Decode xml %v failed %v", this.Data.FileName(), err.Error())

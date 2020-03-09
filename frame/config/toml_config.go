@@ -8,6 +8,7 @@ import (
 )
 
 type TomlConfigure struct {
+	Key     string
 	Data    base.IConfigDoc
 	cfgLock sync.RWMutex
 }
@@ -20,6 +21,10 @@ func (this *TomlConfigure) ConfigDoc() base.IConfigDoc {
 	this.cfgLock.RLock()
 	defer this.cfgLock.RUnlock()
 	return this.Data
+}
+
+func (this *TomlConfigure) ConfigKey() string {
+	return this.Key
 }
 
 func (this *TomlConfigure) LoadConfig() error {

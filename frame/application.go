@@ -75,7 +75,7 @@ type App struct {
 
 var (
 	gApp       *App
-	appConfigs []base.IConfigure
+	appConfigs map[string]base.IConfigure
 )
 
 func Application() *App {
@@ -199,7 +199,7 @@ func LoadAllConfigs(configs []base.IConfigure) {
 			panic(err)
 		}
 
-		appConfigs = append(appConfigs, config)
+		appConfigs[config.ConfigKey()] = config
 	}
 }
 
