@@ -36,14 +36,18 @@ func (this *ActionLock) BeforeAction(c *gin.Context) error {
 
 		if this.Expiration > 0 {
 			if n, err := session.Do("SET", key, "1", "EX", this.Expiration, "NX"); err != nil {
+				logger.Warning("[%v] lock %v failed %v", this.RequestID, key, err.Error())
 				return base.LockActionHttpError(c, err.Error())
 			} else if n != int64(1) {
+				logger.Warning("[%v] lock %v failed %v", this.RequestID, key, n)
 				return base.LockActionHttpError(c, "")
 			}
 		} else {
 			if n, err := session.Do("SETNX", key, "1"); err != nil {
+				logger.Warning("[%v] lock %v failed %v", this.RequestID, key, err.Error())
 				return base.LockActionHttpError(c, err.Error())
 			} else if n != int64(1) {
+				logger.Warning("[%v] lock %v failed %v", this.RequestID, key, n)
 				return base.LockActionHttpError(c, "")
 			}
 		}
