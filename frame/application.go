@@ -75,7 +75,7 @@ type App struct {
 
 var (
 	gApp       *App
-	appConfigs map[string]base.IConfigure
+	appConfigs []base.IConfigure
 )
 
 func Application() *App {
@@ -199,8 +199,19 @@ func LoadAllConfigs(configs []base.IConfigure) {
 			panic(err)
 		}
 
-		appConfigs[config.ConfigKey()] = config
+		appConfigs = append(appConfigs, config)
+		logger.Warning("Register Config: %v", config.ConfigKey())
 	}
+}
+
+func FindConfig(configKey string) base.IConfigDoc {
+	for _, config := range appConfigs {
+		if config.ConfigKey() == configKey {
+			return config.ConfigDoc()
+		}
+	}
+
+	return nil
 }
 
 func ReloadAllConfigs() {
