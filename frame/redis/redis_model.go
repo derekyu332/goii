@@ -104,7 +104,7 @@ func (this *RedisModel) LOG_RET_ERR(tableName string, tStart int64, op string, i
 			this.RequestID, duration, 0)
 	}
 
-	logger.Bill("REDIS|%v", content)
+	logger.Profile("REDIS|%v", content)
 
 	return err
 }

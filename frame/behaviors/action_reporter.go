@@ -28,7 +28,7 @@ func (this *ActionReporter) AfterAction(c *gin.Context) error {
 
 	content := fmt.Sprintf("%v|%v|%v|%v|%v|%v", c.Request.URL.Path, c.GetInt64(base.KEY_REQUEST_ID), duration,
 		c.GetInt(base.KEY_ACTION_RET), c.ClientIP(), c.GetString(base.KEY_IDENTITY))
-	logger.Bill("ACTION|%v", content)
+	logger.Profile("ACTION|%v", content)
 
 	for _, reporter := range this.Reporters {
 		reporter.Report("ACTION", content)

@@ -89,7 +89,7 @@ func (this *MongoModel) LOG_RET_ERR(colName string, tStart int64, op string, con
 			this.RequestID, duration, 0)
 	}
 
-	logger.Bill("MONGO|%v", content)
+	logger.Profile("MONGO|%v", content)
 
 	return err
 }

@@ -9,8 +9,10 @@ import (
 
 var logMain *logging.Logger
 var logBill *logging.Logger
+var logProfile *logging.Logger
 var fileMain *os.File
 var fileBill *os.File
+var fileProfile *os.File
 var normalBackend logging.LeveledBackend
 var logTime time.Time
 var RELEASE string
@@ -18,13 +20,15 @@ var normalLevel logging.Level
 var gMapLock sync.RWMutex
 
 const (
-	MAIN_MODULE = "NORMAL"
-	BILL_MODULE = "BILL"
+	MAIN_MODULE    = "NORMAL"
+	BILL_MODULE    = "BILL"
+	PROFILE_MODULE = "PROFILE"
 )
 
 func init() {
 	logMain = logging.MustGetLogger(MAIN_MODULE)
 	logBill = logging.MustGetLogger(BILL_MODULE)
+	logProfile = logging.MustGetLogger(PROFILE_MODULE)
 
 	if RELEASE == "true" {
 		normalLevel = logging.WARNING
@@ -47,14 +51,20 @@ func configLogger(release bool) {
 		fileBill.Close()
 	}
 
+	if fileProfile != nil {
+		fileProfile.Close()
+	}
+
 	logTime = time.Now()
 	var normalOutput *logging.LogBackend
 	var billOutput *logging.LogBackend
+	var profileOutput *logging.LogBackend
 	var err error
 
 	if !release {
 		normalOutput = logging.NewLogBackend(os.Stdout, "", 0)
 		billOutput = logging.NewLogBackend(os.Stdout, "", 0)
+		profileOutput = logging.NewLogBackend(os.Stdout, "", 0)
 	} else {
 		fileMain, err = os.OpenFile("../logs/app_"+logTime.Format("20060102")+".log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 
@@ -68,8 +78,15 @@ func configLogger(release bool) {
 			panic(err.Error())
 		}
 
+		fileProfile, err = os.OpenFile("../bills/profile_"+logTime.Format("20060102")+".log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
 		normalOutput = logging.NewLogBackend(fileMain, "", 0)
 		billOutput = logging.NewLogBackend(fileBill, "", 0)
+		profileOutput = logging.NewLogBackend(fileProfile, "", 0)
 	}
 
 	logFormat := logging.MustStringFormatter(
@@ -82,12 +99,20 @@ func configLogger(release bool) {
 	)
 	billFormatter := logging.NewBackendFormatter(billOutput, billFormat)
 	billBackend := logging.AddModuleLevel(billFormatter)
+	profileFormat := logging.MustStringFormatter(
+		`%{time:2006-01-02 15:04:05}|%{message}`,
+	)
+	profileFormatter := logging.NewBackendFormatter(profileOutput, profileFormat)
+	profileBackend := logging.AddModuleLevel(profileFormatter)
 	normalBackend.SetLevel(normalLevel, MAIN_MODULE)
 	billBackend.SetLevel(logging.INFO, BILL_MODULE)
+	profileBackend.SetLevel(logging.INFO, PROFILE_MODULE)
 	logMain.SetBackend(normalBackend)
 	logMain.ExtraCalldepth = 1
 	logBill.SetBackend(billBackend)
 	logBill.ExtraCalldepth = 1
+	logProfile.SetBackend(profileBackend)
+	logProfile.ExtraCalldepth = 1
 	gMapLock.Unlock()
 }
 
@@ -143,4 +168,16 @@ func Bill(format string, args ...interface{}) {
 	}
 
 	logBill.Infof(format, args...)
+}
+
+func Profile(format string, args ...interface{}) {
+	if logTime.Format("20060102") != time.Now().Format("20060102") {
+		if RELEASE == "true" {
+			configLogger(true)
+		} else {
+			configLogger(false)
+		}
+	}
+
+	logProfile.Infof(format, args...)
 }

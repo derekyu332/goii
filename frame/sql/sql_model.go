@@ -78,7 +78,7 @@ func (this *SqlModel) LOG_RET_ERR(tableName string, tStart int64, op string, que
 			this.RequestID, duration, 0)
 	}
 
-	logger.Bill("SQL|%v", content)
+	logger.Profile("SQL|%v", content)
 
 	return err
 }
