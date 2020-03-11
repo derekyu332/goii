@@ -97,3 +97,26 @@ func InterfaceToInt64(inter interface{}) (int64, bool) {
 
 	return 0, false
 }
+
+func InterfaceToFloat64(inter interface{}) (float64, bool) {
+	switch inter.(type) {
+	case int:
+		{
+			return float64(inter.(int)), true
+		}
+	case int64:
+		{
+			return float64(inter.(int64)), true
+		}
+	case float64:
+		{
+			return inter.(float64), true
+		}
+	case float32:
+		{
+			return float64(inter.(float32)), true
+		}
+	}
+
+	return 0, false
+}
