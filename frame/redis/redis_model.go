@@ -246,3 +246,29 @@ func (this *RedisModel) Save() error {
 
 	return this.LOG_RET_ERR(this.Data.TableName(), req_start, "Save", this.Data.GetId(), err)
 }
+
+func (this *RedisModel) Delete() error {
+	if !this.Exists {
+		return nil
+	}
+
+	req_start := time.Now().UnixNano() / int64(time.Millisecond)
+	session := this.GetPool().Get()
+	defer session.Close()
+	key := fmt.Sprintf("%v:%v", this.Data.TableName(), this.Data.GetId())
+
+	if tracker, ok := this.Data.(RedisTimeTracker); ok {
+		tracker.SetModified(time.Now())
+	}
+
+	_, err := session.Do("DEL", key)
+
+	if err != nil {
+		logger.Error("[%v] Delete %v failed %v", this.RequestID, this.Data.GetId(), err)
+		return err
+	} else {
+		logger.Info("[%v] Delete %v success", this.RequestID, this.Data)
+	}
+
+	return this.LOG_RET_ERR(this.Data.TableName(), req_start, "Delete", this.Data.GetId(), err)
+}
