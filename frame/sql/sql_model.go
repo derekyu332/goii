@@ -177,6 +177,21 @@ func (this *SqlModel) Count(query interface{}, args ...interface{}) (int64, erro
 	return total, this.LOG_RET_ERR(this.Data.TableName(), req_start, "Count", query, err)
 }
 
+func (this *SqlModel) Sum(column string, query interface{}, args ...interface{}) (int64, error) {
+	if gEngine == nil {
+		return 0, errors.New("Unexpected error")
+	}
+
+	req_start := time.Now().UnixNano() / int64(time.Millisecond)
+	sum, err := gEngine.Where(query, args...).SumInt(this.Data, column)
+
+	if err != nil {
+		logger.Error("[%v] Find %v failed %v", this.RequestID, query, err)
+	}
+
+	return sum, this.LOG_RET_ERR(this.Data.TableName(), req_start, "Sum", query, err)
+}
+
 type FindAllSelector struct {
 	Cond  string
 	Page  int
