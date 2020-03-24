@@ -143,6 +143,39 @@ func (this *MongoModel) GroupCount(key string) ([]bson.M, error) {
 	return result, this.LOG_RET_ERR(this.Data.TableName(), req_start, "GroupCount", bson.M{"key": key}, err)
 }
 
+func (this *MongoModel) Sum(cond bson.M, key string) (int, error) {
+	req_start := time.Now().UnixNano() / int64(time.Millisecond)
+	session := this.GetSession()
+	defer session.Close()
+	collection := session.DB(this.GetDbName()).C(this.Data.TableName())
+	result := make([]bson.M, 0)
+	var err error
+	var sum int64
+
+	if cond != nil {
+		err = collection.Pipe([]bson.M{
+			bson.M{"$match": cond},
+			bson.M{"$project": bson.M{key: 1}},
+			bson.M{"$group": bson.M{"_id": nil, "sum": bson.M{"$sum": fmt.Sprintf("$%v", key)}}},
+		}).All(&result)
+	} else {
+		err = collection.Pipe([]bson.M{
+			bson.M{"$project": bson.M{key: 1}},
+			bson.M{"$group": bson.M{"_id": nil, "sum": bson.M{"$sum": fmt.Sprintf("$%v", key)}}},
+		}).All(&result)
+	}
+
+	if err != nil {
+		logger.Error("[%v] Sum %v %v failed %v", this.RequestID, cond, key, err)
+	} else if len(result) > 0 {
+		v, _ := result[0]["sum"]
+		sum, _ = extend.InterfaceToInt64(v)
+		logger.Info("[%v] %v", this.RequestID, result)
+	}
+
+	return int(sum), this.LOG_RET_ERR(this.Data.TableName(), req_start, "Sum", bson.M{"key": key}, err)
+}
+
 func (this *MongoModel) DistinctCount(cond bson.M, key string) (int, error) {
 	req_start := time.Now().UnixNano() / int64(time.Millisecond)
 	session := this.GetSession()
