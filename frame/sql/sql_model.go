@@ -192,6 +192,29 @@ func (this *SqlModel) Sum(column string, query interface{}, args ...interface{})
 	return sum, this.LOG_RET_ERR(this.Data.TableName(), req_start, "Sum", query, err)
 }
 
+func (this *SqlModel) Distinct(result interface{}, cols []string, query interface{}, args ...interface{}) error {
+	if gEngine == nil {
+		return errors.New("Unexpected error")
+	}
+
+	req_start := time.Now().UnixNano() / int64(time.Millisecond)
+	var err error
+
+	if query == "" {
+		err = gEngine.Distinct(cols...).Find(result)
+	} else {
+		err = gEngine.Where(query, args).Distinct(cols...).Find(result)
+	}
+
+	if err != nil {
+		logger.Error("[%v] Distinct %v failed %v", this.RequestID, cols, err)
+	} else {
+		logger.Info("[%v] Distinct %v Success.", this.RequestID, cols)
+	}
+
+	return this.LOG_RET_ERR(this.Data.TableName(), req_start, "Distinct", cols, err)
+}
+
 type FindAllSelector struct {
 	Cond  string
 	Page  int
