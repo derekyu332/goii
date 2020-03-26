@@ -203,7 +203,7 @@ func (this *SqlModel) Distinct(result interface{}, cols []string, query interfac
 	if query == "" {
 		err = gEngine.Distinct(cols...).Find(result)
 	} else {
-		err = gEngine.Where(query, args).Distinct(cols...).Find(result)
+		err = gEngine.Where(query, args...).Distinct(cols...).Find(result)
 	}
 
 	if err != nil {
