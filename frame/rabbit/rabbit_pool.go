@@ -53,6 +53,7 @@ func NewPool(amqpURI string) pool.Pool {
 
 	poolConfig := &pool.Config{
 		InitialCap:  RABBIT_INIT_POOL_SIZE,
+		MaxIdle:     RABBIT_INIT_POOL_SIZE,
 		MaxCap:      RABBIT_MAX_POOL_SIZE,
 		Factory:     factory,
 		Close:       close,
