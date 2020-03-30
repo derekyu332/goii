@@ -9,10 +9,12 @@ import (
 	"github.com/derekyu332/goii/frame/redis"
 	"github.com/derekyu332/goii/frame/sql"
 	"github.com/derekyu332/goii/helper/logger"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-contrib/size"
 	"github.com/gin-gonic/gin"
 	"github.com/globalsign/mgo"
 	"github.com/op/go-logging"
+	"go/build"
 	"google.golang.org/grpc"
 	"log"
 	"math/rand"
@@ -67,6 +69,8 @@ type App struct {
 	RabbitInit    *RabbitConfig
 	MessageSource []string
 	LogLevel      logging.Level
+	SoPath        string
+	OpenProfile   bool
 	Components    map[string]base.IComponent
 	engine        *gin.Engine
 	module        base.IModule
@@ -87,9 +91,19 @@ func (this *App) PrepareToRun() error {
 	gApp = this
 	this.engine = gin.New()
 	this.engine.Use(gin.Recovery(), limits.RequestSizeLimiter(20<<20))
-	m := base.PluginAllocator("module.so")
+
+	if this.SoPath == "" {
+		this.SoPath = build.Default.GOPATH + "/src/github.com/derekyu332/goii/plugins/"
+	}
+
+	m := base.PluginAllocator(this.SoPath, "module.so")
 	this.module, _ = m.(base.IModule)
 	this.module.SetEngine(this.engine)
+
+	if this.OpenProfile {
+		pprof.Register(this.engine)
+	}
+
 	logger.SetLevel((int)(this.LogLevel))
 
 	if this.SqlInit != nil {

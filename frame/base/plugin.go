@@ -1,12 +1,11 @@
 package base
 
 import (
-	"go/build"
 	"plugin"
 )
 
-func PluginAllocator(name string) interface{} {
-	p, err := plugin.Open(build.Default.GOPATH + "/src/github.com/derekyu332/goii/plugins/" + name)
+func PluginAllocator(path string, name string) interface{} {
+	p, err := plugin.Open(path + name)
 
 	if err != nil {
 		panic(err)
