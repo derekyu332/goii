@@ -175,6 +175,36 @@ func (this *RedisModel) Expire(data base.IActiveRecord, id interface{}, expirati
 	return this.LOG_RET_ERR(data.TableName(), req_start, "Expire", key, err)
 }
 
+func (this *RedisModel) SCard(data base.IActiveRecord, id interface{}) (int, error) {
+	req_start := time.Now().UnixNano() / int64(time.Millisecond)
+	session := this.GetPool().Get()
+	defer session.Close()
+	key := fmt.Sprintf("%v:%v", this.Data.TableName(), id)
+	n, err := redis.Int(session.Do("SCARD", key))
+
+	if err != nil {
+		logger.Error("[%v] SCARD %v failed %v", this.RequestID, key, err)
+	}
+
+	return n, this.LOG_RET_ERR(data.TableName(), req_start, "SCard", key, err)
+}
+
+func (this *RedisModel) SAdd(data base.IActiveRecord, id interface{}, v string) error {
+	req_start := time.Now().UnixNano() / int64(time.Millisecond)
+	session := this.GetPool().Get()
+	defer session.Close()
+	key := fmt.Sprintf("%v:%v", this.Data.TableName(), id)
+	_, err := session.Do("SADD", key, v)
+
+	if err != nil {
+		logger.Error("[%v] SADD %v failed %v", this.RequestID, key, err)
+	} else {
+		logger.Info("[%v] SADD %v success", this.RequestID, key)
+	}
+
+	return this.LOG_RET_ERR(data.TableName(), req_start, "SAdd", key, err)
+}
+
 func (this *RedisModel) FindOne(id interface{}) (base.IActiveRecord, error) {
 	req_start := time.Now().UnixNano() / int64(time.Millisecond)
 	session := this.GetPool().Get()
