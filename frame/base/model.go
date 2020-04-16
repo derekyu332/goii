@@ -23,6 +23,11 @@ type IFieldMethod interface {
 	Attr(string) interface{}
 }
 
+type IRecordContext interface {
+	GetContext() interface{}
+	SetContext(interface{})
+}
+
 type Model struct {
 	Data          IActiveRecord //interface{}
 	Exists        bool

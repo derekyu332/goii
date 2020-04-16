@@ -249,6 +249,12 @@ func (this *MongoModel) FindOne(cond bson.M) (base.IActiveRecord, error) {
 	session := this.GetSession()
 	defer session.Close()
 	collection := session.DB(gDbName).C(this.Data.TableName())
+	var context interface{}
+
+	if context_getter, ok := this.Data.(base.IRecordContext); ok {
+		context = context_getter.GetContext()
+	}
+
 	err := collection.Find(cond).One(this.Data)
 
 	if err == nil {
@@ -262,6 +268,12 @@ func (this *MongoModel) FindOne(cond bson.M) (base.IActiveRecord, error) {
 		err = nil
 	} else {
 		logger.Error("[%v] Find %v failed %v", this.RequestID, cond, err)
+	}
+
+	if context != nil {
+		if context_setter, ok := this.Data.(base.IRecordContext); ok {
+			context_setter.SetContext(context)
+		}
 	}
 
 	return this.Data, this.LOG_RET_ERR(this.Data.TableName(), req_start, "FindOne", cond, err)
