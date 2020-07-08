@@ -138,6 +138,13 @@ func (this *SqlModel) Get(id interface{}) (base.IActiveRecord, error) {
 	}
 
 	req_start := time.Now().UnixNano() / int64(time.Millisecond)
+
+	var context interface{}
+
+	if context_getter, ok := this.Data.(base.IRecordContext); ok {
+		context = context_getter.GetContext()
+	}
+
 	has, err := gEngine.ID(id).Get(this.Data)
 
 	if err == nil {
@@ -157,6 +164,12 @@ func (this *SqlModel) Get(id interface{}) (base.IActiveRecord, error) {
 		}
 	} else {
 		logger.Error("[%v] Get %v failed %v", this.RequestID, id, err)
+	}
+
+	if context != nil {
+		if context_setter, ok := this.Data.(base.IRecordContext); ok {
+			context_setter.SetContext(context)
+		}
 	}
 
 	return this.Data, this.LOG_RET_ERR(this.Data.TableName(), req_start, "Get", id, err)
@@ -281,6 +294,13 @@ func (this *SqlModel) FindOne(query interface{}, args ...interface{}) (base.IAct
 	}
 
 	req_start := time.Now().UnixNano() / int64(time.Millisecond)
+
+	var context interface{}
+
+	if context_getter, ok := this.Data.(base.IRecordContext); ok {
+		context = context_getter.GetContext()
+	}
+
 	has, err := gEngine.Where(query, args...).Get(this.Data)
 
 	if err == nil {
@@ -295,6 +315,12 @@ func (this *SqlModel) FindOne(query interface{}, args ...interface{}) (base.IAct
 		}
 	} else {
 		logger.Error("[%v] Find %v failed %v", this.RequestID, query, err)
+	}
+
+	if context != nil {
+		if context_setter, ok := this.Data.(base.IRecordContext); ok {
+			context_setter.SetContext(context)
+		}
 	}
 
 	return this.Data, this.LOG_RET_ERR(this.Data.TableName(), req_start, "FindOne", query, err)
@@ -402,6 +428,7 @@ func (this *SqlModel) Save() error {
 		} else {
 			logger.Info("[%v] Insert %v success", this.RequestID, this.Data)
 			this.RefreshOldAttr()
+			this.Exists = true
 		}
 	}
 
