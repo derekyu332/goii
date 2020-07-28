@@ -2,6 +2,7 @@ package base
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/derekyu332/goii/frame/formatters"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
@@ -44,6 +45,8 @@ type IController interface {
 	PreparedForUse(*gin.Context)
 	GetContext() *gin.Context
 	Group() string
+	TitleRet() string
+	TitleMessage() string
 	RoutesMap() []Route
 	WorkerMap() []Worker
 	Behaviors() []IActionFilter
@@ -67,6 +70,14 @@ func (this *WebController) PreparedForUse(c *gin.Context) {
 
 func (this *WebController) GetContext() *gin.Context {
 	return this.Context
+}
+
+func (this *WebController) TitleRet() string {
+	return "ret"
+}
+
+func (this *WebController) TitleMessage() string {
+	return "message"
 }
 
 func (this *WebController) ParamExist(c *gin.Context, key string) bool {
@@ -149,7 +160,7 @@ func (this *WebController) ParseServiceRequest(methodName string, req interface{
 	reqMap := StructToMap(req, "json")
 
 	for key, value := range reqMap {
-		httpRequest.PostForm[key] = []string{value.(string)}
+		httpRequest.PostForm[key] = []string{fmt.Sprintf("%v", value)}
 	}
 
 	return httpRequest
