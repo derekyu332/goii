@@ -128,6 +128,18 @@ func Info(format string, args ...interface{}) {
 	logMain.Infof(format, args...)
 }
 
+func Notice(format string, args ...interface{}) {
+	if logTime.Format("20060102") != time.Now().Format("20060102") {
+		if RELEASE == "true" {
+			configLogger(true)
+		} else {
+			configLogger(false)
+		}
+	}
+
+	logMain.Noticef(format, args...)
+}
+
 func Warning(format string, args ...interface{}) {
 	if logTime.Format("20060102") != time.Now().Format("20060102") {
 		if RELEASE == "true" {

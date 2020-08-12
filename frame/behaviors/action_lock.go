@@ -53,7 +53,7 @@ func (this *ActionLock) BeforeAction(c *gin.Context) error {
 		}
 
 		this.lockKey = key
-		logger.Info("[%v] Lock %v", c.GetInt64(base.KEY_REQUEST_ID), this.lockKey)
+		logger.Notice("[%v] Lock %v", c.GetInt64(base.KEY_REQUEST_ID), this.lockKey)
 	}
 
 	return nil
@@ -100,7 +100,7 @@ func (this *ActionLock) AfterAction(c *gin.Context) error {
 			return base.LockActionHttpError(c, err.Error())
 		}
 
-		logger.Info("[%v] Unlock %v", c.GetInt64(base.KEY_REQUEST_ID), this.lockKey)
+		logger.Notice("[%v] Unlock %v", c.GetInt64(base.KEY_REQUEST_ID), this.lockKey)
 	}
 
 	return nil

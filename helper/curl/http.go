@@ -25,7 +25,7 @@ func Get(url string) ([]byte, error) {
 
 	defer respond.Body.Close()
 	body, err := ioutil.ReadAll(respond.Body)
-	logger.Info("HttpGetRequest Err Status = %d body = %v", respond.StatusCode, string(body))
+	logger.Info("HttpGetRequest Status = %d body = %v", respond.StatusCode, string(body))
 
 	if err != nil {
 		logger.Warning("Err %v", err.Error())
@@ -53,6 +53,7 @@ func PostForm(postUrl string, params map[string]string) ([]byte, error) {
 
 	defer respond.Body.Close()
 	body, err := ioutil.ReadAll(respond.Body)
+	logger.Info("HttpGetRequest Status = %d body = %v", respond.StatusCode, string(body))
 
 	if err != nil {
 		logger.Warning("Err %v", err.Error())

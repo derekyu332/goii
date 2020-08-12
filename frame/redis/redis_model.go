@@ -122,11 +122,11 @@ func (this *RedisModel) HGet(data base.IActiveRecord, id interface{}, hkey strin
 		if err != nil {
 			logger.Warning("[%v] HGET %v decode failed %v", this.RequestID, key, err)
 		} else {
-			logger.Info("[%v] HGET %v-%v success", this.RequestID, key, hkey)
+			logger.Notice("[%v] HGET %v-%v success", this.RequestID, key, hkey)
 			logger.Info("[%v] %v", this.RequestID, data)
 		}
 	} else if err == redis.ErrNil {
-		logger.Info("[%v] HGET %v no record", this.RequestID, key)
+		logger.Notice("[%v] HGET %v no record", this.RequestID, key)
 		err = nil
 	} else {
 		logger.Error("[%v] HGET %v failed %v", this.RequestID, key, err)
@@ -155,7 +155,7 @@ func (this *RedisModel) HSet(data base.IActiveRecord, id interface{}, hkey strin
 	if _, err := session.Do("HSET", key, hkey, value); err != nil {
 		logger.Error("[%v] HSET %v failed %v", this.RequestID, key, err)
 	} else {
-		logger.Info("[%v] HSET %v success", this.RequestID, data)
+		logger.Notice("[%v] HSET %v success", this.RequestID, data)
 	}
 
 	return this.LOG_RET_ERR(data.TableName(), req_start, "HSet", key, err)
@@ -199,7 +199,7 @@ func (this *RedisModel) SAdd(data base.IActiveRecord, id interface{}, v string) 
 	if err != nil {
 		logger.Error("[%v] SADD %v failed %v", this.RequestID, key, err)
 	} else {
-		logger.Info("[%v] SADD %v success", this.RequestID, key)
+		logger.Notice("[%v] SADD %v success", this.RequestID, key)
 	}
 
 	return this.LOG_RET_ERR(data.TableName(), req_start, "SAdd", key, err)
@@ -218,12 +218,12 @@ func (this *RedisModel) FindOne(id interface{}) (base.IActiveRecord, error) {
 		if err != nil {
 			logger.Warning("[%v] Find %v decode failed %v", this.RequestID, key, err)
 		} else {
-			logger.Info("[%v] Find %v success", this.RequestID, key)
+			logger.Notice("[%v] Find %v success", this.RequestID, key)
 			logger.Info("[%v] %v", this.RequestID, this.Data)
 			this.Exists = true
 		}
 	} else if err == redis.ErrNil {
-		logger.Info("[%v] Find %v no record", this.RequestID, key)
+		logger.Notice("[%v] Find %v no record", this.RequestID, key)
 		this.Exists = false
 		err = nil
 	} else {
@@ -261,7 +261,7 @@ func (this *RedisModel) Save() error {
 			logger.Error("[%v] Save %v duplicate", this.RequestID, this.Data.GetId())
 			return errors.New("duplicate")
 		} else {
-			logger.Info("[%v] Insert %v success", this.RequestID, this.Data)
+			logger.Notice("[%v] Insert %v success", this.RequestID, this.Data)
 		}
 	} else {
 		_, err := session.Do("SET", key, value)
@@ -270,7 +270,7 @@ func (this *RedisModel) Save() error {
 			logger.Error("[%v] Save %v failed %v", this.RequestID, this.Data.GetId(), err)
 			return err
 		} else {
-			logger.Info("[%v] Update %v success", this.RequestID, this.Data)
+			logger.Notice("[%v] Update %v success", this.RequestID, this.Data)
 		}
 	}
 
@@ -297,7 +297,7 @@ func (this *RedisModel) Delete() error {
 		logger.Error("[%v] Delete %v failed %v", this.RequestID, this.Data.GetId(), err)
 		return err
 	} else {
-		logger.Info("[%v] Delete %v success", this.RequestID, this.Data)
+		logger.Notice("[%v] Delete %v success", this.RequestID, this.Data.GetId())
 	}
 
 	return this.LOG_RET_ERR(this.Data.TableName(), req_start, "Delete", this.Data.GetId(), err)

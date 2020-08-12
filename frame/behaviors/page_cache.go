@@ -50,7 +50,7 @@ func (this *PageCache) BeforeAction(c *gin.Context) error {
 					if err == nil {
 						c.Set(base.KEY_RESPONSE, data)
 						this.cached = true
-						logger.Info("[%v] Get Cache %v", c.GetInt64(base.KEY_REQUEST_ID), filename)
+						logger.Notice("[%v] Get Cache %v", c.GetInt64(base.KEY_REQUEST_ID), filename)
 					}
 				}
 			} else {
@@ -123,7 +123,7 @@ func (this *PageCache) AfterAction(c *gin.Context) error {
 	}
 
 	ioutil.WriteFile(filename, content, 0644)
-	logger.Info("[%v] Set Cache %v", c.GetInt64(base.KEY_REQUEST_ID), filename)
+	logger.Notice("[%v] Set Cache %v", c.GetInt64(base.KEY_REQUEST_ID), filename)
 
 	return nil
 }

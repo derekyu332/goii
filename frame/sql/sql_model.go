@@ -149,7 +149,7 @@ func (this *SqlModel) Get(id interface{}) (base.IActiveRecord, error) {
 
 	if err == nil {
 		if has {
-			logger.Info("[%v] Get %v success", this.RequestID, id)
+			logger.Notice("[%v] Get %v success", this.RequestID, id)
 			logger.Info("[%v] %v", this.RequestID, this.Data)
 			this.RefreshOldAttr()
 			this.Exists = true
@@ -159,7 +159,7 @@ func (this *SqlModel) Get(id interface{}) (base.IActiveRecord, error) {
 				cache.SetCacheRecord(this.Data)
 			}
 		} else {
-			logger.Info("[%v] Get %v no record", this.RequestID, id)
+			logger.Notice("[%v] Get %v no record", this.RequestID, id)
 			this.Exists = false
 		}
 	} else {
@@ -222,7 +222,7 @@ func (this *SqlModel) Distinct(result interface{}, cols []string, query interfac
 	if err != nil {
 		logger.Error("[%v] Distinct %v failed %v", this.RequestID, cols, err)
 	} else {
-		logger.Info("[%v] Distinct %v Success.", this.RequestID, cols)
+		logger.Notice("[%v] Distinct %v Success.", this.RequestID, cols)
 	}
 
 	return this.LOG_RET_ERR(this.Data.TableName(), req_start, "Distinct", cols, err)
@@ -282,7 +282,7 @@ func (this *SqlModel) FindAll(result interface{}, selector FindAllSelector) erro
 	if err != nil {
 		logger.Error("[%v] FindAll %v failed %v", this.RequestID, selector.Cond, err)
 	} else {
-		logger.Info("[%v] FindAll %v Success.", this.RequestID, selector.Cond)
+		logger.Notice("[%v] FindAll %v Success.", this.RequestID, selector.Cond)
 	}
 
 	return this.LOG_RET_ERR(this.Data.TableName(), req_start, "FindAll", selector.Cond, err)
@@ -305,12 +305,12 @@ func (this *SqlModel) FindOne(query interface{}, args ...interface{}) (base.IAct
 
 	if err == nil {
 		if has {
-			logger.Info("[%v] Find %v success", this.RequestID, query)
+			logger.Notice("[%v] Find %v success", this.RequestID, query)
 			logger.Info("[%v] %v", this.RequestID, this.Data)
 			this.RefreshOldAttr()
 			this.Exists = true
 		} else {
-			logger.Info("[%v] Find %v no record", this.RequestID, query)
+			logger.Notice("[%v] Find %v no record", this.RequestID, query)
 			this.Exists = false
 		}
 	} else {
@@ -359,7 +359,7 @@ func (this *SqlModel) Delete() error {
 			logger.Warning("[%v] Delete %v not affected", this.RequestID, pk)
 			return errors.New("Unexpected error")
 		} else {
-			logger.Info("[%v] Delete %v success", this.RequestID, pk)
+			logger.Notice("[%v] Delete %v success", this.RequestID, pk)
 		}
 	}
 
@@ -379,7 +379,7 @@ func (this *SqlModel) Save() error {
 		dirty_cols := this.GetDirtyCols()
 
 		if len(dirty_cols) <= 0 {
-			logger.Info("[%v] Update %v No Change", this.RequestID, this.Data.GetId())
+			logger.Notice("[%v] Update %v No Change", this.RequestID, this.Data.GetId())
 			return nil
 		}
 
@@ -411,7 +411,7 @@ func (this *SqlModel) Save() error {
 			logger.Warning("[%v] Update %v not affected", this.RequestID, pk)
 			return errors.New("Unexpected error")
 		} else {
-			logger.Info("[%v] Update %v success", this.RequestID, pk)
+			logger.Notice("[%v] Update %v success", this.RequestID, pk)
 
 			if _, ok := this.Data.(cache.ICacheRecord); ok {
 				logger.Info("[%v] Set %v To Cache", this.RequestID, pk)
@@ -426,7 +426,7 @@ func (this *SqlModel) Save() error {
 		if err != nil {
 			logger.Warning("[%v] Insert %v failed %v", this.RequestID, this.Data, err.Error())
 		} else {
-			logger.Info("[%v] Insert %v success", this.RequestID, this.Data)
+			logger.Notice("[%v] Insert %v success", this.RequestID, this.Data)
 			this.RefreshOldAttr()
 			this.Exists = true
 		}

@@ -23,7 +23,7 @@ func (this *CookieFilter) BeforeAction(c *gin.Context) error {
 		if err != nil || cookie.Value == "" {
 			return base.InvalidParaHttpError(c, err.Error())
 		} else {
-			logger.Info("[%v] Cookie[%v] = %v", c.GetInt64(base.KEY_REQUEST_ID), param, cookie.Value)
+			logger.Notice("[%v] Cookie[%v] = %v", c.GetInt64(base.KEY_REQUEST_ID), param, cookie.Value)
 		}
 	}
 

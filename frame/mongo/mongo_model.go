@@ -111,7 +111,7 @@ func (this *MongoModel) GetAutoIncrement() (int64, error) {
 		return 0, err
 	}
 
-	logger.Info("[%v] get AutoIncrement %v", this.RequestID, doc.Auto_increment)
+	logger.Notice("[%v] get AutoIncrement %v", this.RequestID, doc.Auto_increment)
 
 	return doc.Auto_increment, nil
 }
@@ -170,7 +170,7 @@ func (this *MongoModel) Max(cond bson.M, key string) (int, error) {
 	} else if len(result) > 0 {
 		v, _ := result[0]["max"]
 		sum, _ = extend.InterfaceToInt64(v)
-		logger.Info("[%v] %v", this.RequestID, result)
+		logger.Notice("[%v] %v", this.RequestID, result)
 	}
 
 	return int(sum), this.LOG_RET_ERR(this.Data.TableName(), req_start, "Max", bson.M{"key": key}, err)
@@ -203,7 +203,7 @@ func (this *MongoModel) Sum(cond bson.M, key string) (int, error) {
 	} else if len(result) > 0 {
 		v, _ := result[0]["sum"]
 		sum, _ = extend.InterfaceToInt64(v)
-		logger.Info("[%v] %v", this.RequestID, result)
+		logger.Notice("[%v] %v", this.RequestID, result)
 	}
 
 	return int(sum), this.LOG_RET_ERR(this.Data.TableName(), req_start, "Sum", bson.M{"key": key}, err)
@@ -238,7 +238,7 @@ func (this *MongoModel) DistinctCount(cond bson.M, key string) (int, error) {
 	} else if len(result) > 0 {
 		v, _ := result[0]["count"]
 		count, _ = extend.InterfaceToInt64(v)
-		logger.Info("[%v] %v", this.RequestID, result)
+		logger.Notice("[%v] %v", this.RequestID, result)
 	}
 
 	return int(count), this.LOG_RET_ERR(this.Data.TableName(), req_start, "DistinctCount", bson.M{"key": key}, err)
@@ -258,12 +258,12 @@ func (this *MongoModel) FindOne(cond bson.M) (base.IActiveRecord, error) {
 	err := collection.Find(cond).One(this.Data)
 
 	if err == nil {
-		logger.Info("[%v] Find %v success", this.RequestID, cond)
+		logger.Notice("[%v] Find %v success", this.RequestID, cond)
 		logger.Info("[%v] %v", this.RequestID, this.Data)
 		this.RefreshOldAttr()
 		this.Exists = true
 	} else if err == mgo.ErrNotFound {
-		logger.Info("[%v] Find %v no record", this.RequestID, cond)
+		logger.Notice("[%v] Find %v no record", this.RequestID, cond)
 		this.Exists = false
 		err = nil
 	} else {
@@ -328,7 +328,7 @@ func (this *MongoModel) FindAll(result interface{}, selector FindAllSelector) er
 	if err = iter.All(result); err != nil {
 		logger.Error("[%v] FindAll %v failed %v", this.RequestID, selector.Cond, err)
 	} else {
-		logger.Info("[%v] FindAll %v Success.", this.RequestID, selector.Cond)
+		logger.Notice("[%v] FindAll %v Success.", this.RequestID, selector.Cond)
 	}
 
 	return this.LOG_RET_ERR(this.Data.TableName(), req_start, "FindAll", selector.Cond, err)
@@ -344,7 +344,7 @@ func (this *MongoModel) ForceIncrement(cond bson.M, incAttr string) error {
 	if err != nil {
 		logger.Warning("[%v] Inc %v failed %v", this.RequestID, incAttr, err.Error())
 	} else {
-		logger.Info("[%v] Inc %v success", this.RequestID, incAttr)
+		logger.Notice("[%v] Inc %v success", this.RequestID, incAttr)
 	}
 
 	return this.LOG_RET_ERR(this.Data.TableName(), req_start, "ForceIncrement", cond, err)
@@ -360,7 +360,7 @@ func (this *MongoModel) ForceMinus(cond bson.M, minusAttr string) error {
 	if err != nil {
 		logger.Warning("[%v] Minus %v failed %v", this.RequestID, minusAttr, err.Error())
 	} else {
-		logger.Info("[%v] Minus %v success", this.RequestID, minusAttr)
+		logger.Notice("[%v] Minus %v success", this.RequestID, minusAttr)
 	}
 
 	return this.LOG_RET_ERR(this.Data.TableName(), req_start, "ForceMinus", cond, err)
@@ -414,7 +414,7 @@ func (this *MongoModel) Save() error {
 		dirty_attr := this.GetDirtyAttr()
 
 		if len(dirty_attr) <= 0 {
-			logger.Info("[%v] Update %v No Change", this.RequestID, this.Data.GetId())
+			logger.Notice("[%v] Update %v No Change", this.RequestID, this.Data.GetId())
 
 			return nil
 		}
@@ -431,7 +431,7 @@ func (this *MongoModel) Save() error {
 		if err != nil {
 			logger.Warning("[%v] Update %v failed %v", this.RequestID, dirty_attr, err.Error())
 		} else {
-			logger.Info("[%v] Update %v success", this.RequestID, dirty_attr)
+			logger.Notice("[%v] Update %v success", this.RequestID, dirty_attr)
 			new_update_seq := this.update_seq + 1
 			this.RefreshOldAttr()
 			this.update_seq = new_update_seq
@@ -444,7 +444,7 @@ func (this *MongoModel) Save() error {
 		if err != nil {
 			logger.Warning("[%v] Insert %v failed %v", this.RequestID, this.Data, err.Error())
 		} else {
-			logger.Info("[%v] Insert %v success", this.RequestID, this.Data)
+			logger.Notice("[%v] Insert %v success", this.RequestID, this.Data)
 			this.Exists = true
 			this.RefreshOldAttr()
 		}
@@ -499,7 +499,7 @@ func (this *MongoModel) UpdateAll(cond bson.M, update interface{}) error {
 	if err != nil {
 		logger.Warning("[%v] UpdateAll %v failed %v", this.RequestID, cond, err.Error())
 	} else {
-		logger.Info("[%v] UpdateAll %v success", this.RequestID, cond)
+		logger.Notice("[%v] UpdateAll %v success", this.RequestID, cond)
 	}
 
 	return this.LOG_RET_ERR(this.Data.TableName(), req_start, "UpdateAll", cond, err)
@@ -533,7 +533,7 @@ func (this *MongoModel) Update(cond bson.M, update interface{}, apply bool) erro
 		} else if info.Updated <= 0 {
 			logger.Warning("[%v] Update %v No change", this.RequestID, cond)
 		} else {
-			logger.Info("[%v] Update %v success", this.RequestID, cond)
+			logger.Notice("[%v] Update %v success", this.RequestID, cond)
 		}
 
 		return this.LOG_RET_ERR(this.Data.TableName(), req_start, "Apply", cond, err)
@@ -543,7 +543,7 @@ func (this *MongoModel) Update(cond bson.M, update interface{}, apply bool) erro
 		if err != nil {
 			logger.Warning("[%v] Update %v failed %v", this.RequestID, cond, err.Error())
 		} else {
-			logger.Info("[%v] Update %v success", this.RequestID, cond)
+			logger.Notice("[%v] Update %v success", this.RequestID, cond)
 		}
 
 		return this.LOG_RET_ERR(this.Data.TableName(), req_start, "Update", cond, err)
@@ -560,7 +560,7 @@ func (this *MongoModel) Upsert(cond bson.M, update interface{}) error {
 	if err != nil {
 		logger.Warning("[%v] Upsert %v failed %v", this.RequestID, cond, err.Error())
 	} else {
-		logger.Info("[%v] Upsert %v success", this.RequestID, cond)
+		logger.Notice("[%v] Upsert %v success", this.RequestID, cond)
 	}
 
 	return this.LOG_RET_ERR(this.Data.TableName(), req_start, "Upsert", cond, err)
