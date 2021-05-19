@@ -1,6 +1,7 @@
 package base
 
 import (
+	"github.com/derekyu332/goii/frame/kafka"
 	"github.com/derekyu332/goii/frame/rabbit"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
@@ -16,5 +17,6 @@ type IModule interface {
 	SetControllers(controllers []IController)
 	RunService() grpc.UnaryServerInterceptor
 	RunWorker() rabbit.RabbitHandler
+	RunPoll() kafka.KafkaHandler
 	RunAction(regController IController, relativePath string) func(*gin.Context)
 }

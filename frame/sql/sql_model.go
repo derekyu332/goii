@@ -214,9 +214,9 @@ func (this *SqlModel) Distinct(result interface{}, cols []string, query interfac
 	var err error
 
 	if query == "" {
-		err = gEngine.Distinct(cols...).Find(result)
+		err = gEngine.Table(this.Data).Distinct(cols...).Find(result)
 	} else {
-		err = gEngine.Where(query, args...).Distinct(cols...).Find(result)
+		err = gEngine.Table(this.Data).Where(query, args...).Distinct(cols...).Find(result)
 	}
 
 	if err != nil {

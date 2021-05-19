@@ -41,13 +41,20 @@ func GetMondayZero() int64 {
 
 func GetMonth1stZero() int64 {
 	t := time.Now()
-	offset := int(time.Monday - t.Weekday())
+	monthStartDate := time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, time.Local)
 
-	if offset > 0 {
-		offset = -6
+	return monthStartDate.Unix()
+}
+
+func GetLastMonth1stZero() int64 {
+	t := time.Now()
+	last_month := t.Month() - 1
+
+	if last_month == 0 {
+		last_month = time.December
 	}
 
-	monthStartDate := time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, time.Local)
+	monthStartDate := time.Date(t.Year(), last_month, 1, 0, 0, 0, 0, time.Local)
 
 	return monthStartDate.Unix()
 }

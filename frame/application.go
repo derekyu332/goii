@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/derekyu332/goii/frame/base"
 	"github.com/derekyu332/goii/frame/i18n"
+	"github.com/derekyu332/goii/frame/kafka"
 	"github.com/derekyu332/goii/frame/mongo"
 	"github.com/derekyu332/goii/frame/rabbit"
 	"github.com/derekyu332/goii/frame/redis"
@@ -60,6 +61,16 @@ type RabbitConfig struct {
 	WorkRoutineKey string
 }
 
+type KafkaConfig struct {
+	Topic            []string
+	GroupId          string
+	BootstrapServers string
+	SecurityProtocol string
+	SaslMechanism    string
+	SaslUsername     string
+	SaslPassword     string
+}
+
 type App struct {
 	WebInit       *WebServerConfig
 	ServiceInit   *RpcServiceConfig
@@ -67,6 +78,7 @@ type App struct {
 	MongoInit     *MongoConfig
 	RedisInit     *RedisConfig
 	RabbitInit    *RabbitConfig
+	KafkaInit     *KafkaConfig
 	MessageSource []string
 	LogLevel      logging.Level
 	SoPath        string
@@ -146,6 +158,12 @@ func (this *App) PrepareToRun() error {
 			rabbit.InitWorker(this.RabbitInit.AmqpURI, this.RabbitInit.WorkQueue, this.RabbitInit.WorkRoutineKey,
 				this.module.RunWorker())
 		}
+	}
+
+	if this.KafkaInit != nil {
+		kafka.InitWorker(this.KafkaInit.Topic, this.KafkaInit.GroupId, this.KafkaInit.BootstrapServers,
+			this.KafkaInit.SecurityProtocol, this.KafkaInit.SaslMechanism, this.KafkaInit.SaslUsername,
+			this.KafkaInit.SaslPassword, this.module.RunPoll())
 	}
 
 	if this.Components != nil {
