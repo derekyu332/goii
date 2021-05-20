@@ -99,7 +99,9 @@ func (this *KafkaConsumer) consumeMessage(consumer *kafka.Consumer) bool {
 		msg, err := consumer.ReadMessage(-1)
 
 		if err == nil {
-			logger.Info("Got Message: [%v] %v", msg.TopicPartition, string(msg.Value))
+			logger.Info("Got Message: [%v:%v:%v] %v", msg.TopicPartition.Topic, msg.TopicPartition.Partition,
+				msg.TopicPartition.Offset, string(msg.Value))
+			go this.handler(msg)
 		} else {
 			logger.Warning("ReadMessage error: %v (%v)\n", err, msg)
 			consumer.Close()
