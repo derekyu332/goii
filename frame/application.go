@@ -82,6 +82,7 @@ type App struct {
 	MessageSource []string
 	LogLevel      logging.Level
 	SoPath        string
+	ServiceName   string
 	OpenProfile   bool
 	Components    map[string]base.IComponent
 	engine        *gin.Engine
@@ -208,7 +209,13 @@ func (this *App) RegisterControllers(controllers []base.IController) {
 		routes := controller.RoutesMap()
 
 		if name != "" {
-			group := this.engine.Group(name)
+			var group *gin.RouterGroup
+
+			if this.ServiceName != "" {
+				group = this.engine.Group(this.ServiceName).Group(name)
+			} else {
+				group = this.engine.Group(name)
+			}
 
 			for _, route := range routes {
 				logger.Warning("Register Route(%v) = %v", name, route)
