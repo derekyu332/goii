@@ -1,17 +1,17 @@
 package sql
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/derekyu332/goii/frame/base"
 	"github.com/derekyu332/goii/frame/cache"
 	"github.com/derekyu332/goii/helper/logger"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/go-xorm/core"
-	"github.com/go-xorm/xorm"
 	"reflect"
 	"time"
+	"xorm.io/xorm"
+	"xorm.io/xorm/log"
+	"xorm.io/xorm/schemas"
 )
 
 var (
@@ -19,7 +19,7 @@ var (
 )
 
 type ISqlRecord interface {
-	PrimaryKey() core.PK
+	PrimaryKey() schemas.PK
 }
 
 type TableLocker interface {
@@ -41,7 +41,7 @@ func InitEngine(driver string, dbUri string, maxIdelConns int) {
 
 	gEngine.SetMaxIdleConns(maxIdelConns)
 	gEngine.ShowSQL(false)
-	gEngine.SetLogLevel(core.LOG_WARNING)
+	gEngine.SetLogLevel(log.LOG_WARNING)
 	go keepAlive(10 * time.Second)
 	logger.Warning("Connect Success")
 }
@@ -121,19 +121,11 @@ func (this *SqlModel) Get(id interface{}) (base.IActiveRecord, error) {
 		return nil, errors.New("Unexpected error")
 	}
 
-	if cache_record, ok := this.Data.(cache.ICacheRecord); ok {
+	if cache_record, ok := this.Data.(cache.ICacheRecord); ok && cache_record.ReadOnly() {
 		if record := cache.GetCacheRecord(fmt.Sprintf("%v@%v", id, this.Data.TableName())); record != nil {
-			if cache_record.ReadOnly() {
-				this.Data = record
-				this.Exists = true
-				return this.Data, nil
-			} else {
-				data_json, _ := json.Marshal(record)
-				json.Unmarshal(data_json, this.Data)
-				this.RefreshOldAttr()
-				this.Exists = true
-				return this.Data, nil
-			}
+			this.Data = record
+			this.Exists = true
+			return this.Data, nil
 		}
 	}
 
@@ -154,7 +146,7 @@ func (this *SqlModel) Get(id interface{}) (base.IActiveRecord, error) {
 			this.RefreshOldAttr()
 			this.Exists = true
 
-			if _, ok := this.Data.(cache.ICacheRecord); ok {
+			if cache_record, ok := this.Data.(cache.ICacheRecord); ok && cache_record.ReadOnly() {
 				logger.Info("[%v] Set %v To Cache", this.RequestID, id)
 				cache.SetCacheRecord(this.Data)
 			}
@@ -386,7 +378,12 @@ func (this *SqlModel) Save() error {
 		record, ok := this.Data.(ISqlRecord)
 
 		if !ok {
-			logger.Warning("[%v] ISqlRecord not implemented")
+			logger.Warning("[%v] ISqlRecord not implemented", this.RequestID)
+			return errors.New("Unexpected error")
+		}
+
+		if cache_record, ok := this.Data.(cache.ICacheRecord); ok && cache_record.ReadOnly() {
+			logger.Warning("[%v] ICacheRecord readonly", this.RequestID)
 			return errors.New("Unexpected error")
 		}
 
@@ -412,12 +409,6 @@ func (this *SqlModel) Save() error {
 			return errors.New("Unexpected error")
 		} else {
 			logger.Notice("[%v] Update %v success", this.RequestID, pk)
-
-			if _, ok := this.Data.(cache.ICacheRecord); ok {
-				logger.Info("[%v] Set %v To Cache", this.RequestID, pk)
-				cache.SetCacheRecord(this.Data)
-			}
-
 			this.RefreshOldAttr()
 		}
 	} else {
