@@ -1,6 +1,7 @@
 package base
 
 import (
+	"github.com/derekyu332/goii/frame/ether"
 	"github.com/derekyu332/goii/frame/kafka"
 	"github.com/derekyu332/goii/frame/rabbit"
 	"github.com/gin-gonic/gin"
@@ -18,5 +19,6 @@ type IModule interface {
 	RunService() grpc.UnaryServerInterceptor
 	RunWorker() rabbit.RabbitHandler
 	RunPoll() kafka.KafkaHandler
+	RunEther() ether.EtherHandler
 	RunAction(regController IController, relativePath string) func(*gin.Context)
 }

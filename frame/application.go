@@ -3,6 +3,7 @@ package frame
 import (
 	"context"
 	"github.com/derekyu332/goii/frame/base"
+	"github.com/derekyu332/goii/frame/ether"
 	"github.com/derekyu332/goii/frame/i18n"
 	"github.com/derekyu332/goii/frame/kafka"
 	"github.com/derekyu332/goii/frame/mongo"
@@ -71,6 +72,10 @@ type KafkaConfig struct {
 	SaslPassword     string
 }
 
+type EtherConfig struct {
+	dialUrl string
+}
+
 type App struct {
 	WebInit       *WebServerConfig
 	ServiceInit   *RpcServiceConfig
@@ -79,6 +84,7 @@ type App struct {
 	RedisInit     *RedisConfig
 	RabbitInit    *RabbitConfig
 	KafkaInit     *KafkaConfig
+	EtherInit     *EtherConfig
 	MessageSource []string
 	LogLevel      logging.Level
 	SoPath        string
@@ -165,6 +171,10 @@ func (this *App) PrepareToRun() error {
 		kafka.InitWorker(this.KafkaInit.Topic, this.KafkaInit.GroupId, this.KafkaInit.BootstrapServers,
 			this.KafkaInit.SecurityProtocol, this.KafkaInit.SaslMechanism, this.KafkaInit.SaslUsername,
 			this.KafkaInit.SaslPassword, this.module.RunPoll())
+	}
+
+	if this.EtherInit != nil {
+		ether.NewSubscriber(this.EtherInit.dialUrl, this.module.RunEther())
 	}
 
 	if this.Components != nil {
