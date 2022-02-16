@@ -73,7 +73,7 @@ type KafkaConfig struct {
 }
 
 type EtherConfig struct {
-	dialUrl string
+	DialUrl string
 }
 
 type App struct {
@@ -174,7 +174,7 @@ func (this *App) PrepareToRun() error {
 	}
 
 	if this.EtherInit != nil {
-		ether.NewSubscriber(this.EtherInit.dialUrl, this.module.RunEther())
+		ether.NewSubscriber(this.EtherInit.DialUrl, this.module.RunEther())
 	}
 
 	if this.Components != nil {
