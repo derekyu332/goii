@@ -1,8 +1,13 @@
 package kafka
 
 import (
+	"encoding/json"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/derekyu332/goii/helper/extend"
 	"github.com/derekyu332/goii/helper/logger"
+	"github.com/lestrrat-go/file-rotatelogs"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"time"
 )
 
@@ -22,11 +27,32 @@ type KafkaConsumer struct {
 	SaslPassword     string
 	done             chan bool
 	handler          KafkaHandler
+	logger           *zap.Logger
 }
 
 func NewConsumer(topic []string, groupId string, bootstrapServers string, securityProtocol string,
 	saslMechanism string, saslUsername string, saslPassword string, handler KafkaHandler) *KafkaConsumer {
-	var err error
+	logFile := "../output/app_%Y%m%d.log"
+	rotator, err := rotatelogs.New(logFile, rotatelogs.WithMaxAge(60*24*time.Hour), rotatelogs.WithRotationTime(24*time.Hour))
+
+	if err != nil {
+		panic(err)
+	}
+
+	encoderConfig := map[string]string{
+		"levelEncoder": "capital",
+		"timeKey":      "date",
+		"timeEncoder":  "iso8601",
+	}
+	data, _ := json.Marshal(encoderConfig)
+	var encCfg zapcore.EncoderConfig
+
+	if err := json.Unmarshal(data, &encCfg); err != nil {
+		panic(err)
+	}
+
+	w := zapcore.AddSync(rotator)
+	core := zapcore.NewCore(zapcore.NewJSONEncoder(encCfg), w, zap.InfoLevel)
 	newConsumer := &KafkaConsumer{
 		Topic:            topic,
 		GroupId:          groupId,
@@ -37,6 +63,7 @@ func NewConsumer(topic []string, groupId string, bootstrapServers string, securi
 		SaslPassword:     saslPassword,
 		done:             make(chan bool),
 		handler:          handler,
+		logger:           zap.New(core),
 	}
 
 	err = newConsumer.initConsumer()
@@ -99,8 +126,11 @@ func (this *KafkaConsumer) consumeMessage(consumer *kafka.Consumer) bool {
 		msg, err := consumer.ReadMessage(-1)
 
 		if err == nil {
-			logger.Info("Got Message: [%v:%v:%v] %v", msg.TopicPartition.Topic, msg.TopicPartition.Partition,
-				msg.TopicPartition.Offset, string(msg.Value))
+			this.logger.Info("Got Message",
+				zap.String("topic", *msg.TopicPartition.Topic),
+				zap.Int32("partition", msg.TopicPartition.Partition),
+				zap.Int64("offset", int64(msg.TopicPartition.Offset)),
+				zap.String("content", extend.BytesString(msg.Value)))
 			go this.handler(msg)
 		} else {
 			logger.Warning("ReadMessage error: %v (%v)\n", err, msg)
@@ -109,6 +139,7 @@ func (this *KafkaConsumer) consumeMessage(consumer *kafka.Consumer) bool {
 		}
 	}
 
+	defer this.logger.Sync()
 	logger.Warning("Consumer Reconnect")
 
 	for {

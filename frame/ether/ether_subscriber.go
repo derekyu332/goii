@@ -57,6 +57,7 @@ func (this *EtherSubscriber) initHeadSubscriber() error {
 	}
 
 	go this.subscribeHead(client)
+	logger.Warning("initHeadSubscriber Success")
 
 	return nil
 }
@@ -115,6 +116,7 @@ func (this *EtherSubscriber) initLogsSubscriber() error {
 	}
 
 	go this.subscribeLogs(client)
+	logger.Warning("initLogsSubscriber Success")
 
 	return nil
 }
