@@ -26,6 +26,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"github.com/derekyu332/goii/frame/middlewares"
 )
 
 type SqlConfig struct {
@@ -91,6 +92,7 @@ type App struct {
 	SoPath        string
 	ServiceName   string
 	OpenProfile   bool
+	OpenPrometheus bool
 	Components    map[string]base.IComponent
 	engine        *gin.Engine
 	module        base.IModule
@@ -122,6 +124,11 @@ func (this *App) PrepareToRun() error {
 
 	if this.OpenProfile {
 		pprof.Register(this.engine)
+	}
+
+	if this.OpenPrometheus {
+		p := middlewares.NewPrometheus("gin")
+		p.Use(this.engine)
 	}
 
 	logger.SetLevel((int)(this.LogLevel))
