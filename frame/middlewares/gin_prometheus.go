@@ -12,8 +12,7 @@ import (
 	"github.com/derekyu332/goii/helper/logger"
 	"github.com/derekyu332/goii/frame/base"
 	"fmt"
-	"strings"
-)
+	)
 
 var defaultMetricPath = "/metrics"
 
@@ -25,27 +24,31 @@ var reqCnt = &Metric{
 	Name:        "requests_total",
 	Description: "How many HTTP requests processed, partitioned by status code and HTTP method.",
 	Type:        "counter_vec",
-	Args:        []string{"service", "method", "ret"}}
+	Args:        []string{"endpoint", "method", "ret"}}
 
 var reqDur = &Metric{
 	ID:          "reqDur",
 	Name:        "request_duration_seconds",
 	Description: "The HTTP request latencies in seconds.",
 	Type:        "histogram_vec",
-	Args:        []string{"service", "method"},
+	Args:        []string{"endpoint", "method", "ret"},
 }
 
 var resSz = &Metric{
 	ID:          "resSz",
 	Name:        "response_size_bytes",
 	Description: "The HTTP response sizes in bytes.",
-	Type:        "summary"}
+	Type:        "summary_vec",
+	Args:        []string{"endpoint", "method", "ret"},
+}
 
 var reqSz = &Metric{
 	ID:          "reqSz",
 	Name:        "request_size_bytes",
 	Description: "The HTTP request sizes in bytes.",
-	Type:        "summary"}
+	Type:        "summary_vec",
+	Args:        []string{"endpoint", "method", "ret"},
+}
 
 var standardMetrics = []*Metric{
 	reqCnt,
@@ -90,13 +93,14 @@ type Metric struct {
 type Prometheus struct {
 	reqCnt        *prometheus.CounterVec
 	reqDur        *prometheus.HistogramVec
-	reqSz, resSz  prometheus.Summary
+	reqSz, resSz  *prometheus.SummaryVec
 	router        *gin.Engine
 	listenAddress string
 	Ppg           PrometheusPushGateway
 
 	MetricsList []*Metric
 	MetricsPath string
+	EndPoint    string
 
 	ReqCntURLLabelMappingFn RequestCounterURLLabelMappingFn
 
@@ -123,7 +127,7 @@ type PrometheusPushGateway struct {
 }
 
 // NewPrometheus generates a new set of metrics with a certain subsystem name
-func NewPrometheus(subsystem string, customMetricsList ...[]*Metric) *Prometheus {
+func NewPrometheus(subsystem string, endpoint string, customMetricsList ...[]*Metric) *Prometheus {
 
 	var metricsList []*Metric
 
@@ -140,6 +144,7 @@ func NewPrometheus(subsystem string, customMetricsList ...[]*Metric) *Prometheus
 	p := &Prometheus{
 		MetricsList: metricsList,
 		MetricsPath: defaultMetricPath,
+		EndPoint: endpoint,
 		ReqCntURLLabelMappingFn: func(c *gin.Context) string {
 			return c.Request.URL.Path // i.e. by default do nothing, i.e. return URL as is
 		},
@@ -334,9 +339,9 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 		case reqDur:
 			p.reqDur = metric.(*prometheus.HistogramVec)
 		case resSz:
-			p.resSz = metric.(prometheus.Summary)
+			p.resSz = metric.(*prometheus.SummaryVec)
 		case reqSz:
-			p.reqSz = metric.(prometheus.Summary)
+			p.reqSz = metric.(*prometheus.SummaryVec)
 		}
 		metricDef.MetricCollector = metric
 	}
@@ -369,18 +374,11 @@ func (p *Prometheus) HandlerFunc() gin.HandlerFunc {
 
 		elapsed := float64(time.Since(start)) / float64(time.Second)
 		resSz := float64(c.Writer.Size())
-		url := strings.Split(c.Request.URL.Path, "/")
-		service_name := "unknown"
-
-		if len(url) > 1 {
-			service_name = url[1]
-		}
-
 		ret := fmt.Sprintf("%v", c.GetInt(base.KEY_ACTION_RET))
-		p.reqDur.WithLabelValues(service_name, c.Request.URL.Path).Observe(elapsed)
-		p.reqCnt.WithLabelValues(service_name, c.Request.URL.Path, ret).Inc()
-		p.reqSz.Observe(float64(reqSz))
-		p.resSz.Observe(resSz)
+		p.reqDur.WithLabelValues(p.EndPoint, c.Request.URL.Path, ret).Observe(elapsed)
+		p.reqCnt.WithLabelValues(p.EndPoint, c.Request.URL.Path, ret).Inc()
+		p.reqSz.WithLabelValues(p.EndPoint, c.Request.URL.Path, ret).Observe(float64(reqSz))
+		p.resSz.WithLabelValues(p.EndPoint, c.Request.URL.Path, ret).Observe(resSz)
 	}
 }
 

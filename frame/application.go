@@ -126,8 +126,8 @@ func (this *App) PrepareToRun() error {
 		pprof.Register(this.engine)
 	}
 
-	if this.OpenPrometheus {
-		p := middlewares.NewPrometheus("gin")
+	if this.WebInit != nil && this.OpenPrometheus {
+		p := middlewares.NewPrometheus("gin", this.WebInit.Address)
 		p.Use(this.engine)
 	}
 
