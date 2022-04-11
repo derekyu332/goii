@@ -6,7 +6,7 @@ import (
 	"github.com/gocraft/work"
 	"time"
 	"github.com/derekyu332/goii/frame/base"
-)
+	)
 
 var (
 	gWorkerPool *work.WorkerPool
@@ -24,6 +24,11 @@ const (
 
 type WorketContext struct {
 
+}
+
+func (c *WorketContext) Log(job *work.Job, next work.NextMiddlewareFunc) error {
+	logger.Info("Starting job: %v, ID = %v", job.Name, job.ID)
+	return next()
 }
 
 func InitPool(url string, passowrd string, concurrency int) {
@@ -45,25 +50,12 @@ func InitPool(url string, passowrd string, concurrency int) {
 
 			return c, err
 		},
-		MaxActive:  concurrency,
+		MaxActive:   concurrency,
 		MaxIdle:     REDIS_MAX_IDLE,
-		IdleTimeout: REDIS_IDLE_TIME_OUT * time.Second,
 		Wait: true,
-		TestOnBorrow: func(c redis.Conn, t time.Time) error {
-			if time.Since(t) < time.Minute {
-				return nil
-			}
-
-			_, err := c.Do("PING")
-
-			if err != nil {
-				logger.Error("check connection error %v", err)
-			}
-
-			return err
-		},
 	}
 	gWorkerPool = work.NewWorkerPool(WorketContext{}, uint(concurrency), "WORKER", redisPool)
+	gWorkerPool.Middleware((*WorketContext).Log)
 	logger.Warning("WorkerPool Init Success")
 }
 
