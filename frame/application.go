@@ -28,7 +28,7 @@ import (
 	"time"
 	"github.com/derekyu332/goii/frame/middlewares"
 	"github.com/derekyu332/goii/frame/worker"
-)
+	)
 
 type SqlConfig struct {
 	Driver       string
@@ -184,8 +184,7 @@ func (this *App) PrepareToRun() error {
 	}
 
 	if this.WorkerInit != nil {
-		worker.InitPool(this.WorkerInit.Url, this.WorkerInit.Password, this.module, this.ServiceName,
-			this.WorkerInit.Concurrency)
+		worker.InitPool(this.WorkerInit.Url, this.WorkerInit.Password, this.WorkerInit.Concurrency)
 	}
 
 	if this.KafkaInit != nil {
@@ -305,6 +304,10 @@ func (this *App) Run() {
 				panic(err)
 			}
 		}()
+	}
+
+	if this.WorkerInit != nil {
+		worker.Run(this.ServiceName, this.module)
 	}
 
 	if this.ServiceInit != nil {

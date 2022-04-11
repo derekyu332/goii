@@ -2,14 +2,16 @@ package worker
 
 import (
 	"github.com/gomodule/redigo/redis"
-	"github.com/derekyu332/goii/frame/base"
-	"github.com/derekyu332/goii/helper/logger"
+		"github.com/derekyu332/goii/helper/logger"
 	"github.com/gocraft/work"
 	"time"
+	"github.com/derekyu332/goii/frame/base"
 )
 
 var (
 	gWorkerPool *work.WorkerPool
+	gServiceName string
+	gBaseModule base.IModule
 )
 
 const (
@@ -20,7 +22,11 @@ const (
 	REDIS_IDLE_TIME_OUT    = 240
 )
 
-func InitPool(url string, passowrd string, ctx base.IModule, serviceName string, concurrency int) {
+type WorketContext struct {
+
+}
+
+func InitPool(url string, passowrd string, concurrency int) {
 	redisPool := &redis.Pool{
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.DialURL(url, redis.DialConnectTimeout(REDIS_CONNECT_TIME_OUT*time.Second),
@@ -57,8 +63,12 @@ func InitPool(url string, passowrd string, ctx base.IModule, serviceName string,
 			return err
 		},
 	}
-	gWorkerPool = work.NewWorkerPool(ctx, uint(concurrency), "WORKER", redisPool)
-	controllers := ctx.GetControllers()
+	gWorkerPool = work.NewWorkerPool(WorketContext{}, uint(concurrency), "WORKER", redisPool)
+	logger.Warning("WorkerPool Init Success")
+}
+
+func Run(serviceName string, module base.IModule) {
+	controllers := module.GetControllers()
 
 	for _, controller := range controllers {
 		if controller.SupportWorker() {
@@ -78,7 +88,7 @@ func InitPool(url string, passowrd string, ctx base.IModule, serviceName string,
 				gWorkerPool.JobWithOptions(job_name, work.JobOptions{
 					Priority: uint(controller.Priority()),
 					MaxFails: uint(controller.Retry() + 1),
-				}, ctx.RunWorker(serviceName))
+				}, module.RunWorker(serviceName))
 			}
 		}
 	}
