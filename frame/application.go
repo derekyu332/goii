@@ -27,6 +27,7 @@ import (
 	"syscall"
 	"time"
 	"github.com/derekyu332/goii/frame/middlewares"
+	"github.com/derekyu332/goii/frame/worker"
 )
 
 type SqlConfig struct {
@@ -73,6 +74,12 @@ type KafkaConfig struct {
 	SaslPassword     string
 }
 
+type WorkerPoolConfig struct {
+	Url       string
+	Password  string
+	Concurrency int
+}
+
 type EtherConfig struct {
 	DialUrl         string
 	FilterAddresses []string
@@ -87,6 +94,7 @@ type App struct {
 	RabbitInit    *RabbitConfig
 	KafkaInit     *KafkaConfig
 	EtherInit     *EtherConfig
+	WorkerInit    *WorkerPoolConfig
 	MessageSource []string
 	LogLevel      logging.Level
 	SoPath        string
@@ -169,10 +177,15 @@ func (this *App) PrepareToRun() error {
 			rabbit.InitConsumer(this.RabbitInit.AmqpURI, this.RabbitInit.RpcQueue, this.RabbitInit.RpcRoutineKey)
 		}
 
-		if this.RabbitInit.OpenWorker {
+		/*if this.RabbitInit.OpenWorker {
 			rabbit.InitWorker(this.RabbitInit.AmqpURI, this.RabbitInit.WorkQueue, this.RabbitInit.WorkRoutineKey,
 				this.module.RunWorker())
-		}
+		}*/
+	}
+
+	if this.WorkerInit != nil {
+		worker.InitPool(this.WorkerInit.Url, this.WorkerInit.Password, this.module, this.ServiceName,
+			this.WorkerInit.Concurrency)
 	}
 
 	if this.KafkaInit != nil {
@@ -330,6 +343,12 @@ func (this *App) Run() {
 				}
 
 				logger.Warning("Application Shutdown Success")
+
+				if this.WorkerInit != nil {
+					worker.StopPool()
+					logger.Warning("Worker Shutdown Success")
+				}
+
 				os.Exit(0)
 			}
 		}

@@ -46,6 +46,9 @@ type IController interface {
 	GetContext() *gin.Context
 	Group() string
 	TitleRet() string
+	Priority() int
+	Retry() int
+	SupportWorker() bool
 	TitleMessage() string
 	RoutesMap() []Route
 	WorkerMap() []Worker
@@ -78,6 +81,18 @@ func (this *WebController) TitleRet() string {
 
 func (this *WebController) TitleMessage() string {
 	return "message"
+}
+
+func (this *WebController) Priority() int {
+	return 1
+}
+
+func (this *WebController) Retry() int {
+	return 0
+}
+
+func (this *WebController) SupportWorker() bool {
+	return false
 }
 
 func (this *WebController) ParamExist(c *gin.Context, key string) bool {

@@ -3,8 +3,7 @@ package base
 import (
 	"github.com/derekyu332/goii/frame/ether"
 	"github.com/derekyu332/goii/frame/kafka"
-	"github.com/derekyu332/goii/frame/rabbit"
-	"github.com/gin-gonic/gin"
+		"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 )
 
@@ -15,9 +14,10 @@ const KEY_IDENTITY = "KEY_IDENTITY"
 
 type IModule interface {
 	SetEngine(eg *gin.Engine)
+	GetControllers() []IController
 	SetControllers(controllers []IController)
 	RunService() grpc.UnaryServerInterceptor
-	RunWorker() rabbit.RabbitHandler
+	RunWorker(serviceName string) interface{}
 	RunPoll() kafka.KafkaHandler
 	RunEther() ether.EtherHandler
 	RunAction(regController IController, relativePath string) func(*gin.Context)
