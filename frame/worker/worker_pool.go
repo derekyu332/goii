@@ -54,7 +54,8 @@ func InitPool(url string, passowrd string, concurrency int) {
 		MaxIdle:     REDIS_MAX_IDLE,
 		Wait: true,
 	}
-	gWorkerPool = work.NewWorkerPool(WorketContext{}, uint(concurrency), "WORKER", redisPool)
+	gWorkerPool = work.NewWorkerPoolWithOptions(WorketContext{}, uint(concurrency), "WORKER",
+		redisPool, work.WorkerPoolOptions{SleepBackoffs: []int64{0, 10, 100, 200, 400, 500, 1000}})
 	gWorkerPool.Middleware((*WorketContext).Log)
 	logger.Warning("WorkerPool Init Success")
 }

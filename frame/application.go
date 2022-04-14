@@ -155,6 +155,7 @@ func (this *App) PrepareToRun() error {
 		mongoConfig.PoolTimeout = 3000 * time.Millisecond
 		mongoConfig.ReadTimeout = 10000 * time.Millisecond
 		mongoConfig.WriteTimeout = 5000 * time.Millisecond
+		mongoConfig.MaxIdleTimeMS = 60000
 		mongoConfig.Safe = mgo.Safe{
 			W:        1,
 			WTimeout: 5000,

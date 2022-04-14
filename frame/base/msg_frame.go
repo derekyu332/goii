@@ -134,6 +134,10 @@ func (this *ServerCall) RpcServer(request proto.Message, netHead *NetHead, csHea
 		logger.Warning("[%v] proto.Marshal failed %v", this.RequestID, err.Error())
 
 		return err
+	} else if len(body) >= 65535 {
+		logger.Warning("[%v] Error: Too Long Body %v", this.RequestID, len(body))
+
+		return ServerUnexpectedHttpError(nil, "Too Long Body")
 	}
 
 	msgLenByte := make([]byte, 0)
@@ -171,6 +175,10 @@ func (this *ServerCall) NotifyServer(message proto.Message, netHead *NetHead, cs
 		logger.Warning("[%v] proto.Marshal failed %v", this.RequestID, err.Error())
 
 		return err
+	} else if len(body) >= 65535 {
+		logger.Warning("[%v] Error: Too Long Body %v", this.RequestID, len(body))
+
+		return ServerUnexpectedHttpError(nil, "Too Long Body")
 	}
 
 	msgLenByte := make([]byte, 0)
