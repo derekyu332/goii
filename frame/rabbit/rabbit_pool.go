@@ -12,11 +12,11 @@ var (
 )
 
 const (
-	RABBIT_INIT_POOL_SIZE = 8
-	RABBIT_MAX_POOL_SIZE  = 32
+	RABBIT_INIT_POOL_SIZE = 16
+	RABBIT_MAX_POOL_SIZE  = 256
 )
 
-func NewPool(amqpURI string) pool.Pool {
+func NewPool(amqpURI string, initCap int, maxCap int, maxIdle int) pool.Pool {
 	gRabbitSession = NewSession(amqpURI)
 
 	if gRabbitSession == nil {
@@ -51,10 +51,22 @@ func NewPool(amqpURI string) pool.Pool {
 		}
 	}
 
+	if initCap == 0 {
+		initCap = RABBIT_INIT_POOL_SIZE
+	}
+
+	if maxIdle == 0 {
+		maxIdle = RABBIT_INIT_POOL_SIZE
+	}
+
+	if maxCap == 0 {
+		maxCap = RABBIT_MAX_POOL_SIZE
+	}
+
 	poolConfig := &pool.Config{
-		InitialCap:  RABBIT_INIT_POOL_SIZE,
-		MaxIdle:     RABBIT_INIT_POOL_SIZE,
-		MaxCap:      RABBIT_MAX_POOL_SIZE,
+		InitialCap:  initCap,
+		MaxIdle:     maxIdle,
+		MaxCap:      maxCap,
 		Factory:     factory,
 		Close:       close,
 		Ping:        ping,

@@ -16,8 +16,8 @@ var (
 	gCorrId       int64
 )
 
-func InitProducer(amqpURI string) error {
-	gProducerPool = NewPool(amqpURI)
+func InitProducer(amqpURI string, initCap int, maxCap int, maxIdle int) error {
+	gProducerPool = NewPool(amqpURI, initCap, maxCap, maxIdle)
 
 	if gProducerPool == nil {
 		return errors.New("Unexpected error")

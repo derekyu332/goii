@@ -56,6 +56,8 @@ type RpcServiceConfig struct {
 
 type RabbitConfig struct {
 	AmqpURI        string
+	InitCap        int
+	MaxCap         int
 	OpenRpc        bool
 	RpcQueue       string
 	RpcRoutineKey  string
@@ -172,7 +174,7 @@ func (this *App) PrepareToRun() error {
 	}
 
 	if this.RabbitInit != nil {
-		rabbit.InitProducer(this.RabbitInit.AmqpURI)
+		rabbit.InitProducer(this.RabbitInit.AmqpURI, this.RabbitInit.InitCap, this.RabbitInit.MaxCap, this.RabbitInit.InitCap)
 
 		if this.RabbitInit.OpenRpc {
 			rabbit.InitConsumer(this.RabbitInit.AmqpURI, this.RabbitInit.RpcQueue, this.RabbitInit.RpcRoutineKey)
