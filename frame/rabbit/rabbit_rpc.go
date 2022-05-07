@@ -45,6 +45,7 @@ func GetProducerChannel() *amqp.Channel {
 	ch, err := gProducerPool.Get()
 
 	if err != nil {
+		logger.Warning("Get Channel Failed %v", err.Error())
 		return nil
 	}
 

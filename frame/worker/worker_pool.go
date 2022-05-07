@@ -31,7 +31,7 @@ func (c *WorketContext) Log(job *work.Job, next work.NextMiddlewareFunc) error {
 	return next()
 }
 
-func InitPool(url string, passowrd string, concurrency int) {
+func InitPool(url string, passowrd string, concurrency int, namespace string) {
 	redisPool := &redis.Pool{
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.DialURL(url, redis.DialConnectTimeout(REDIS_CONNECT_TIME_OUT*time.Second),
@@ -54,7 +54,7 @@ func InitPool(url string, passowrd string, concurrency int) {
 		MaxIdle:     REDIS_MAX_IDLE,
 		Wait: true,
 	}
-	gWorkerPool = work.NewWorkerPoolWithOptions(WorketContext{}, uint(concurrency), "WORKER",
+	gWorkerPool = work.NewWorkerPoolWithOptions(WorketContext{}, uint(concurrency), namespace,
 		redisPool, work.WorkerPoolOptions{SleepBackoffs: []int64{0, 10, 100, 200, 400, 500, 1000}})
 	gWorkerPool.Middleware((*WorketContext).Log)
 	logger.Warning("WorkerPool Init Success")

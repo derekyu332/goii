@@ -187,7 +187,7 @@ func (this *App) PrepareToRun() error {
 	}
 
 	if this.WorkerInit != nil {
-		worker.InitPool(this.WorkerInit.Url, this.WorkerInit.Password, this.WorkerInit.Concurrency)
+		worker.InitPool(this.WorkerInit.Url, this.WorkerInit.Password, this.WorkerInit.Concurrency, this.ServiceName)
 	}
 
 	if this.KafkaInit != nil {
