@@ -176,7 +176,7 @@ func (this *MongoModel) Max(cond bson.M, key string) (int, error) {
 	return int(sum), this.LOG_RET_ERR(this.Data.TableName(), req_start, "Max", bson.M{"key": key}, err)
 }
 
-func (this *MongoModel) Sum(cond bson.M, key string) (int, error) {
+func (this *MongoModel) Sum(cond bson.M, key string) (int64, error) {
 	req_start := time.Now().UnixNano() / int64(time.Millisecond)
 	session := this.GetSession()
 	defer session.Close()
@@ -206,7 +206,7 @@ func (this *MongoModel) Sum(cond bson.M, key string) (int, error) {
 		logger.Notice("[%v] %v", this.RequestID, result)
 	}
 
-	return int(sum), this.LOG_RET_ERR(this.Data.TableName(), req_start, "Sum", bson.M{"key": key}, err)
+	return sum, this.LOG_RET_ERR(this.Data.TableName(), req_start, "Sum", bson.M{"key": key}, err)
 }
 
 func (this *MongoModel) DistinctCount(cond bson.M, key string) (int, error) {

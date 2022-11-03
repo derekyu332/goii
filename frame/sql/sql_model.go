@@ -8,6 +8,7 @@ import (
 	"github.com/derekyu332/goii/helper/logger"
 	_ "github.com/go-sql-driver/mysql"
 	"reflect"
+	"strings"
 	"time"
 	"xorm.io/xorm"
 	"xorm.io/xorm/log"
@@ -242,11 +243,13 @@ func (this *SqlModel) FindAll(result interface{}, selector FindAllSelector) erro
 	var session *xorm.Session
 
 	if selector.Asc != "" {
-		session = gEngine.Asc(selector.Asc)
+		ascs := strings.Split(selector.Asc, ",")
+		session = gEngine.Asc(ascs...)
 	}
 
 	if selector.Desc != "" {
-		session = gEngine.Desc(selector.Desc)
+		descs := strings.Split(selector.Desc, ",")
+		session = gEngine.Desc(descs...)
 	}
 
 	if selector.Cols != nil {

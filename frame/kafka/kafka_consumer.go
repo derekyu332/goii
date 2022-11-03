@@ -11,9 +11,8 @@ import (
 	"time"
 )
 
-const (
-	KAFKA_RECONNECT_DELAY = 5 * time.Second
-)
+var KAFKA_RECONNECT_DELAY = []time.Duration{100 * time.Millisecond, 500 * time.Millisecond,
+	1000 * time.Millisecond, 2000 * time.Millisecond, 5000 * time.Millisecond}
 
 type KafkaHandler func(message *kafka.Message) error
 
@@ -140,6 +139,7 @@ func (this *KafkaConsumer) consumeMessage(consumer *kafka.Consumer) bool {
 	}
 
 	defer this.logger.Sync()
+	retry_times := 0
 	logger.Warning("Consumer Reconnect")
 
 	for {
@@ -148,10 +148,15 @@ func (this *KafkaConsumer) consumeMessage(consumer *kafka.Consumer) bool {
 			consumer.Close()
 			logger.Warning("Consumer Closed.")
 			return false
-		case <-time.After(KAFKA_RECONNECT_DELAY):
-			logger.Warning("Consumer Retrying Init...")
+		case <-time.After(KAFKA_RECONNECT_DELAY[retry_times]):
+			logger.Warning("Consumer Retrying Init...Retry %v", retry_times)
 			if this.initConsumer() == nil {
+				retry_times = 0
 				return true
+			}
+
+			if retry_times < len(KAFKA_RECONNECT_DELAY)-1 {
+				retry_times++
 			}
 		}
 	}
