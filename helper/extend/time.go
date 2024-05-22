@@ -48,13 +48,7 @@ func GetMonth1stZero() int64 {
 
 func GetLastMonth1stZero() int64 {
 	t := time.Now()
-	last_month := t.Month() - 1
-
-	if last_month == 0 {
-		last_month = time.December
-	}
-
-	monthStartDate := time.Date(t.Year(), last_month, 1, 0, 0, 0, 0, time.Local)
+	monthStartDate := time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, time.Local).AddDate(0, -1, 0)
 
 	return monthStartDate.Unix()
 }

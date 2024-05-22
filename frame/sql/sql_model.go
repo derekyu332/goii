@@ -222,6 +222,7 @@ func (this *SqlModel) Distinct(result interface{}, cols []string, query interfac
 }
 
 type FindAllSelector struct {
+	Table string
 	Cond  string
 	Page  int
 	Limit int
@@ -250,6 +251,10 @@ func (this *SqlModel) FindAll(result interface{}, selector FindAllSelector) erro
 	if selector.Desc != "" {
 		descs := strings.Split(selector.Desc, ",")
 		session = gEngine.Desc(descs...)
+	}
+
+	if selector.Table != "" {
+		session = session.Table(selector.Table)
 	}
 
 	if selector.Cols != nil {

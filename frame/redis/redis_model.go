@@ -28,6 +28,10 @@ type RedisTimeTracker interface {
 	SetModified(time.Time)
 }
 
+type RedisProfile interface {
+	DisableProfile(string) bool
+}
+
 type RedisModel struct {
 	base.Model
 }
@@ -63,9 +67,11 @@ func (this *RedisModel) GetPool() *redis.Pool {
 					return nil, err
 				}
 
-				if _, err := c.Do("AUTH", gPassword); err != nil {
-					logger.Error("AUTH error %v", err)
-					return nil, err
+				if gPassword != "" {
+					if _, err := c.Do("AUTH", gPassword); err != nil {
+						logger.Error("AUTH error %v", err)
+						return nil, err
+					}
 				}
 
 				return c, err
@@ -92,6 +98,12 @@ func (this *RedisModel) GetPool() *redis.Pool {
 }
 
 func (this *RedisModel) LOG_RET_ERR(tableName string, tStart int64, op string, id interface{}, err error) error {
+	if err == nil && this.Data != nil {
+		if profile, ok := this.Data.(RedisProfile); ok && profile.DisableProfile(op) {
+			return nil
+		}
+	}
+
 	now := time.Now().UnixNano() / int64(time.Millisecond)
 	duration := now - tStart
 	var content string

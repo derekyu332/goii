@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	ETHER_REDIAL_DELAY = 5 * time.Second
+	ETHER_REDIAL_DELAY = 1 * time.Second
 )
 
 type EtherHandler func(topic string, body []byte) error
@@ -68,26 +68,25 @@ func (this *EtherSubscriber) subscribeHead(client *ethclient.Client) error {
 
 	if err != nil {
 		logger.Warning("SubscribeNewHead failed %v", err.Error())
-		return err
-	}
+	} else {
+		isLost := false
 
-	isLost := false
+		for {
+			select {
+			case err := <-sub.Err():
+				logger.Warning("SubscribeNewHead failed %v", err.Error())
+				isLost = true
+				break
+			case header := <-headers:
+				logger.Info("Got New Block %v, Number %v", header.Hash().Hex(), header.Number.String())
+				body, _ := json.Marshal(header)
+				go this.handler("new-heads", body)
+			}
 
-	for {
-		select {
-		case err := <-sub.Err():
-			logger.Warning("SubscribeNewHead failed %v", err.Error())
-			isLost = true
-			break
-		case header := <-headers:
-			logger.Info("Got New Block %v, Number %v", header.Hash().Hex(), header.Number.String())
-			body, _ := json.Marshal(header)
-			go this.handler("new-heads", body)
-		}
-
-		if isLost {
-			logger.Warning("WebSocket Lost")
-			break
+			if isLost {
+				logger.Warning("WebSocket Lost")
+				break
+			}
 		}
 	}
 
@@ -135,26 +134,25 @@ func (this *EtherSubscriber) subscribeLogs(client *ethclient.Client) error {
 
 	if err != nil {
 		logger.Warning("SubscribeFilterLogs failed %v", err.Error())
-		return err
-	}
+	} else {
+		isLost := false
 
-	isLost := false
+		for {
+			select {
+			case err := <-sub.Err():
+				logger.Warning("SubscribeFilterLogs failed %v", err.Error())
+				isLost = true
+				break
+			case log := <-filterlogs:
+				logger.Info("Got New Transaction %v, BlockNumber %v", log.TxHash, log.BlockNumber)
+				body, _ := json.Marshal(log)
+				go this.handler("filter-logs", body)
+			}
 
-	for {
-		select {
-		case err := <-sub.Err():
-			logger.Warning("SubscribeFilterLogs failed %v", err.Error())
-			isLost = true
-			break
-		case log := <-filterlogs:
-			logger.Info("Got New Transaction %v, BlockNumber %v", log.TxHash, log.BlockNumber)
-			body, _ := json.Marshal(log)
-			go this.handler("filter-logs", body)
-		}
-
-		if isLost {
-			logger.Warning("WebSocket Lost")
-			break
+			if isLost {
+				logger.Warning("WebSocket Lost")
+				break
+			}
 		}
 	}
 

@@ -23,6 +23,10 @@ type CollectionLocker interface {
 	OptimisticLock() string
 }
 
+type CollectionProfile interface {
+	DisableProfile(string) bool
+}
+
 type CollectionTimeTracker interface {
 	SetModified(time.Time)
 }
@@ -77,6 +81,12 @@ func (this *MongoModel) GetSession() *mgo.Session {
 }
 
 func (this *MongoModel) LOG_RET_ERR(colName string, tStart int64, op string, cond bson.M, err error) error {
+	if err == nil && this.Data != nil {
+		if profile, ok := this.Data.(CollectionProfile); ok && profile.DisableProfile(op) {
+			return nil
+		}
+	}
+
 	now := time.Now().UnixNano() / int64(time.Millisecond)
 	duration := now - tStart
 	var content string
