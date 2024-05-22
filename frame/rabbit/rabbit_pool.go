@@ -13,7 +13,7 @@ var (
 
 const (
 	RABBIT_INIT_POOL_SIZE = 16
-	RABBIT_MAX_POOL_SIZE  = 64
+	RABBIT_MAX_POOL_SIZE  = 256
 )
 
 func NewPool(amqpURI string, initCap int, maxCap int, maxIdle int) pool.Pool {
